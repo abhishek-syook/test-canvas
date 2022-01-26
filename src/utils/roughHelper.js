@@ -41,6 +41,15 @@ export const drawElement = (context, element, selectedElement) => {
       context.stroke();
       break;
 
+    case ELEMENT_TYPES.POLYLINE:
+      context.beginPath();
+      context.moveTo(element.points[0].x, element.points[0].y);
+      element.points.forEach(({ x, y }) => {
+        context.lineTo(x, y);
+      });
+      context.stroke();
+      break;
+
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
@@ -56,6 +65,7 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
 
     case ELEMENT_TYPES.PENCIL:
     case ELEMENT_TYPES.POLYGON:
+    case ELEMENT_TYPES.POLYLINE:
       return { id, type, points: [{ x: x1, y: y1 }] };
 
     case ELEMENT_TYPES.TEXT:
@@ -104,6 +114,7 @@ const PositionWithinElement = (x, y, element) => {
       return betweenAnyPoint ? "inside" : null;
 
     case ELEMENT_TYPES.POLYGON:
+    case ELEMENT_TYPES.POLYLINE:
       const isBetweenAnyPoint = element.points.some((point, index) => {
         const nextPoint = element.points[index + 1];
         if (!nextPoint) return false;

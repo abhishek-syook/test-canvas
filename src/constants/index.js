@@ -5,6 +5,7 @@ export const ELEMENT_TYPES = Object.freeze({
   PENCIL: "pencil",
   TEXT: "text",
   POLYGON: "polygon",
+  POLYLINE: "polyline",
 });
 
 export const ACTIONS = Object.freeze({

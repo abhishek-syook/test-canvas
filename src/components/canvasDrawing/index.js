@@ -22,7 +22,7 @@ const CanvasDrawing = () => {
   const [elements, setElements, undo, redo] = useHistory([]);
   // const [elements, setElements, undo, redo] = useHistory(dataElements);
   const [action, setAction] = useState(false);
-  const [tool, setTool] = useState(ELEMENT_TYPES.POLYGON);
+  const [tool, setTool] = useState(ELEMENT_TYPES.POLYLINE);
   const [selectedElement, setSelectedElement] = useState(null);
 
   useLayoutEffect(() => {
@@ -77,6 +77,7 @@ const CanvasDrawing = () => {
 
       case ELEMENT_TYPES.PENCIL:
       case ELEMENT_TYPES.POLYGON:
+      case ELEMENT_TYPES.POLYLINE:
         elementsCopy[id].points = [...elementsCopy[id].points, { x: x2, y: y2 }];
         break;
 
@@ -103,7 +104,11 @@ const CanvasDrawing = () => {
     if (tool === ELEMENT_TYPES.SELECTION) {
       const element = getElementAtPosition(clientX, clientY, elements);
       if (element) {
-        if ([ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON].includes(element.type)) {
+        if (
+          [ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(
+            element.type
+          )
+        ) {
           const xOffsets = element.points.map(point => clientX - point.x);
           const yOffsets = element.points.map(point => clientY - point.y);
           setSelectedElement({ ...element, xOffsets, yOffsets });
@@ -121,7 +126,7 @@ const CanvasDrawing = () => {
         }
       }
     } else {
-      if (selectedElement?.type === ELEMENT_TYPES.POLYGON) {
+      if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type)) {
         const index = elements.length - 1;
         const { x1, y1 } = elements[index];
         updateElement(index, x1, y1, clientX, clientY, tool);
@@ -145,7 +150,7 @@ const CanvasDrawing = () => {
     }
 
     if (action === ACTIONS.DRAWING) {
-      if (selectedElement.type === ELEMENT_TYPES.POLYGON) {
+      if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
         // TODO:
         const index = elements.length - 1;
         const { x1, y1 } = elements[index];
@@ -162,7 +167,11 @@ const CanvasDrawing = () => {
         updateElement(index, x1, y1, clientX, clientY, tool);
       }
     } else if (action === ACTIONS.MOVING) {
-      if ([ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON].includes(selectedElement.type)) {
+      if (
+        [ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(
+          selectedElement.type
+        )
+      ) {
         const newPoints = selectedElement.points.map((_, index) => ({
           x: clientX - selectedElement.xOffsets[index],
           y: clientY - selectedElement.yOffsets[index],
@@ -174,7 +183,7 @@ const CanvasDrawing = () => {
           points: newPoints,
         };
         setElements(elementsCopy, true);
-      } else if (ELEMENT_TYPES.POLYGON === selectedElement.type) {
+      } else if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
         // TODO:
       } else {
         const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement;
@@ -215,7 +224,11 @@ const CanvasDrawing = () => {
     }
 
     if (action === ACTIONS.WRITING) return;
-    if (action === ACTIONS.DRAWING && selectedElement.type === ELEMENT_TYPES.POLYGON) return;
+    if (
+      action === ACTIONS.DRAWING &&
+      [ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)
+    )
+      return;
 
     setAction(ACTIONS.NONE);
     setSelectedElement(null);
