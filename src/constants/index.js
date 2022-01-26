@@ -1,3 +1,5 @@
+export const NEAR_POINT_DISTANCE = 2;
+
 export const ELEMENT_TYPES = Object.freeze({
   LINE: "line",
   RECTANGLE: "rectangle",

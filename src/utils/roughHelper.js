@@ -1,4 +1,4 @@
-import { CURSOR, ELEMENT_TYPES } from "../constants";
+import { CURSOR, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
 
 export const drawElement = (context, element, selectedElement) => {
   context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
@@ -77,7 +77,9 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
 };
 
 const nearPoint = (x, y, x1, y1, name) => {
-  return Math.abs(x - x1) < 5 && Math.abs(y - y1) < 5 ? name : null;
+  return Math.abs(x - x1) < NEAR_POINT_DISTANCE && Math.abs(y - y1) < NEAR_POINT_DISTANCE
+    ? name
+    : null;
 };
 
 const onLine = (x1, y1, x2, y2, x, y, maxDistance = 1) => {
@@ -109,16 +111,25 @@ const PositionWithinElement = (x, y, element) => {
       const betweenAnyPoint = element.points.some((point, index) => {
         const nextPoint = element.points[index + 1];
         if (!nextPoint) return false;
-        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !== null;
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
       return betweenAnyPoint ? "inside" : null;
 
     case ELEMENT_TYPES.POLYGON:
+      const isInBetweenAnyPoint = element.points.some((point, index) => {
+        let nextIndex = index + 1;
+        nextIndex = element.points.length === nextIndex ? 0 : nextIndex;
+        const nextPoint = element.points[nextIndex];
+        if (!nextPoint) return false;
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
+      });
+      return isInBetweenAnyPoint ? "inside" : null;
+
     case ELEMENT_TYPES.POLYLINE:
       const isBetweenAnyPoint = element.points.some((point, index) => {
         const nextPoint = element.points[index + 1];
         if (!nextPoint) return false;
-        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !== null;
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
       return isBetweenAnyPoint ? "inside" : null;
 
