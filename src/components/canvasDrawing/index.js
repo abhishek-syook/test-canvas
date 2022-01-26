@@ -9,18 +9,18 @@ import {
   cursorForPosition,
   drawElement,
   getElementAtPosition,
+  nearPoint,
   resizedCoordinates,
 } from "utils/roughHelper";
 import { ACTIONS, CURSOR, ELEMENT_TYPES, KEYBOARD_KEYS } from "../../constants";
 
 import Toolbar from "../toolbar";
-import { dataElements } from "constants/data";
+import cloneDeep from "utils/cloneDeep";
 
 const CanvasDrawing = () => {
   const canvasRef = useRef();
   const textAreaRef = useRef();
   const [elements, setElements, undo, redo] = useHistory([]);
-  // const [elements, setElements, undo, redo] = useHistory(dataElements);
   const [action, setAction] = useState(false);
   const [tool, setTool] = useState(ELEMENT_TYPES.POLYLINE);
   const [selectedElement, setSelectedElement] = useState(null);
@@ -151,7 +151,6 @@ const CanvasDrawing = () => {
 
     if (action === ACTIONS.DRAWING) {
       if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
-        // TODO:
         const index = elements.length - 1;
         const { x1, y1 } = elements[index];
         if (selectedElement.points.length > 1) {
@@ -196,9 +195,29 @@ const CanvasDrawing = () => {
         updateElement(id, newX, newY, newX + width, newY + height, type, options);
       }
     } else if (action === ACTIONS.RESIZING) {
-      const { id, type, position, ...coordinates } = selectedElement;
-      const { x1, y1, x2, y2 } = resizedCoordinates(clientX, clientY, position, coordinates);
-      updateElement(id, x1, y1, x2, y2, type);
+      if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
+        const hasPointOver = selectedElement.points.map((point, index) => {
+          return nearPoint(clientX, clientY, point.x, point.y, "start");
+        });
+
+        const index = hasPointOver.indexOf("start");
+        if (index > -1) {
+          const selectedElementCopy = cloneDeep(selectedElement);
+          const newPoints = selectedElementCopy.points;
+          newPoints[index] = { x: clientX, y: clientY };
+          const elementsCopy = cloneDeep(elements);
+          elementsCopy[selectedElement.id] = {
+            ...elementsCopy[selectedElement.id],
+            points: newPoints,
+          };
+          setSelectedElement(selectedElementCopy);
+          setElements(elementsCopy, true);
+        }
+      } else {
+        const { id, type, position, ...coordinates } = selectedElement;
+        const { x1, y1, x2, y2 } = resizedCoordinates(clientX, clientY, position, coordinates);
+        updateElement(id, x1, y1, x2, y2, type);
+      }
     }
   };
 

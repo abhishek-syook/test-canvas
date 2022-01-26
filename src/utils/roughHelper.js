@@ -76,7 +76,7 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
   }
 };
 
-const nearPoint = (x, y, x1, y1, name) => {
+export const nearPoint = (x, y, x1, y1, name) => {
   return Math.abs(x - x1) < NEAR_POINT_DISTANCE && Math.abs(y - y1) < NEAR_POINT_DISTANCE
     ? name
     : null;
@@ -123,15 +123,23 @@ const PositionWithinElement = (x, y, element) => {
         if (!nextPoint) return false;
         return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
-      return isInBetweenAnyPoint ? "inside" : null;
+
+      const hasPointOver = element.points.some((point, index) => {
+        return nearPoint(x, y, point.x, point.y, "start");
+      });
+
+      return hasPointOver ? "start" : isInBetweenAnyPoint ? "inside" : null;
 
     case ELEMENT_TYPES.POLYLINE:
-      const isBetweenAnyPoint = element.points.some((point, index) => {
+      const isBetweenAnyPointPolyline = element.points.some((point, index) => {
         const nextPoint = element.points[index + 1];
         if (!nextPoint) return false;
         return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
-      return isBetweenAnyPoint ? "inside" : null;
+      const hasPointOverPolyline = element.points.some((point, index) => {
+        return nearPoint(x, y, point.x, point.y, "start");
+      });
+      return hasPointOverPolyline ? "start" : isBetweenAnyPointPolyline ? "inside" : null;
 
     case ELEMENT_TYPES.TEXT:
       const textInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
