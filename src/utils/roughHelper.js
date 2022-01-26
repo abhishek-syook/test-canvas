@@ -1,22 +1,4 @@
-import { getStroke } from "perfect-freehand";
-
 import { CURSOR, ELEMENT_TYPES } from "../constants";
-
-const getSvgPathFromStroke = stroke => {
-  if (!stroke.length) return "";
-
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ["M", ...stroke[0], "Q"]
-  );
-
-  d.push("Z");
-  return d.join(" ");
-};
 
 export const drawElement = (context, element, selectedElement) => {
   context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
@@ -34,8 +16,12 @@ export const drawElement = (context, element, selectedElement) => {
       break;
 
     case ELEMENT_TYPES.PENCIL:
-      const stroke = getSvgPathFromStroke(getStroke(element.points));
-      context.fill(new Path2D(stroke));
+      context.beginPath();
+      context.moveTo(element.points[0].x, element.points[0].y);
+      element.points.forEach(({ x, y }) => {
+        context.lineTo(x, y);
+      });
+      context.stroke();
       break;
 
     case ELEMENT_TYPES.TEXT:
