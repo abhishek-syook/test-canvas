@@ -43,14 +43,14 @@ const Toolbar = ({ selectedTool, onChange }) => {
         onChange={() => onChange(ELEMENT_TYPES.TEXT)}
       />
       <label htmlFor="text">Text</label>
-      
+
       <input
         type="radio"
-        id="polyline"
-        checked={selectedTool === ELEMENT_TYPES.POLYLINE}
-        onChange={() => onChange(ELEMENT_TYPES.POLYLINE)}
+        id="polygon"
+        checked={selectedTool === ELEMENT_TYPES.POLYGON}
+        onChange={() => onChange(ELEMENT_TYPES.POLYGON)}
       />
-      <label htmlFor="polyline">Polyline</label>
+      <label htmlFor="polygon">Polygon</label>
     </div>
   );
 };

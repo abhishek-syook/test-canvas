@@ -4,7 +4,7 @@ export const ELEMENT_TYPES = Object.freeze({
   SELECTION: "selection",
   PENCIL: "pencil",
   TEXT: "text",
-  POLYLINE: "polyline"
+  POLYGON: "polygon",
 });
 
 export const ACTIONS = Object.freeze({
@@ -20,4 +20,10 @@ export const CURSOR = Object.freeze({
   MOVE: "move",
   NWSE_RESIZE: "nwse-resize",
   NESW_RESIZE: "nesw-resize",
+});
+
+export const KEYBOARD_KEYS = Object.freeze({
+  ENTER: "enter",
+  ESCAPE: "escape",
+  Z: "z",
 });

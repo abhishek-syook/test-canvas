@@ -2,7 +2,7 @@ import { getStroke } from "perfect-freehand";
 
 import { CURSOR, ELEMENT_TYPES } from "../constants";
 
-const getSvgPathFromStroke = (stroke) => {
+const getSvgPathFromStroke = stroke => {
   if (!stroke.length) return "";
 
   const d = stroke.reduce(
@@ -18,16 +18,14 @@ const getSvgPathFromStroke = (stroke) => {
   return d.join(" ");
 };
 
-export const drawElement = (context, element) => {
+export const drawElement = (context, element, selectedElement) => {
+  context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
+
   switch (element.type) {
     case ELEMENT_TYPES.RECTANGLE:
-      context.strokeRect(
-        element.x1,
-        element.y1,
-        element.x2 - element.x1,
-        element.y2 - element.y1
-      );
+      context.strokeRect(element.x1, element.y1, element.x2 - element.x1, element.y2 - element.y1);
       break;
+
     case ELEMENT_TYPES.LINE:
       context.beginPath();
       context.moveTo(element.x1, element.y1);
@@ -47,6 +45,16 @@ export const drawElement = (context, element) => {
       context.fillText(element.text, element.x1, element.y1);
       break;
 
+    case ELEMENT_TYPES.POLYGON:
+      context.beginPath();
+      context.moveTo(element.points[0].x, element.points[0].y);
+      element.points.forEach(({ x, y }) => {
+        context.lineTo(x, y);
+      });
+      context.closePath();
+      context.stroke();
+      break;
+
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
@@ -61,6 +69,7 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
       return { id, x1, y1, x2, y2, type };
 
     case ELEMENT_TYPES.PENCIL:
+    case ELEMENT_TYPES.POLYGON:
       return { id, type, points: [{ x: x1, y: y1 }] };
 
     case ELEMENT_TYPES.TEXT:
@@ -97,41 +106,44 @@ const PositionWithinElement = (x, y, element) => {
       const topRight = nearPoint(x, y, x2, y1, "tr");
       const bottomLeft = nearPoint(x, y, x1, y2, "bl");
       const bottomRight = nearPoint(x, y, x2, y2, "br");
-      const rectInside =
-        x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
+      const rectInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
       return topLeft || topRight || bottomLeft || bottomRight || rectInside;
 
     case ELEMENT_TYPES.PENCIL:
       const betweenAnyPoint = element.points.some((point, index) => {
         const nextPoint = element.points[index + 1];
         if (!nextPoint) return false;
-        return (
-          onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !== null
-        );
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !== null;
       });
       return betweenAnyPoint ? "inside" : null;
 
+    case ELEMENT_TYPES.POLYGON:
+      const isBetweenAnyPoint = element.points.some((point, index) => {
+        const nextPoint = element.points[index + 1];
+        if (!nextPoint) return false;
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !== null;
+      });
+      return isBetweenAnyPoint ? "inside" : null;
+
     case ELEMENT_TYPES.TEXT:
-      const textInside =
-        x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
+      const textInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
       return textInside;
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
 };
 
-const distance = (a, b) =>
-  Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+const distance = (a, b) => Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
 
 export const getElementAtPosition = (x, y, elements) => {
-  const eles = elements.map((element) => ({
+  const eles = elements.map(element => ({
     ...element,
     position: PositionWithinElement(x, y, element),
   }));
-  return eles.find((element) => element.position !== null);
+  return eles.find(element => element.position !== null);
 };
 
-export const adjustElementCoordinates = (element) => {
+export const adjustElementCoordinates = element => {
   const { type, x1, y1, x2, y2 } = element;
   const minX = Math.min(x1, x2);
   const maxX = Math.max(x1, x2);
@@ -149,7 +161,7 @@ export const adjustElementCoordinates = (element) => {
   }
 };
 
-export const cursorForPosition = (position) => {
+export const cursorForPosition = position => {
   switch (position) {
     case "tl":
     case "br":
@@ -184,5 +196,5 @@ export const resizedCoordinates = (clientX, clientY, position, coordinates) => {
   }
 };
 
-export const adjustmentRequired = (type) =>
+export const adjustmentRequired = type =>
   [ELEMENT_TYPES.LINE, ELEMENT_TYPES.RECTANGLE].includes(type);

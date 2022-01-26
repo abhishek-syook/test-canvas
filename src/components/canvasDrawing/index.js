@@ -11,41 +11,46 @@ import {
   getElementAtPosition,
   resizedCoordinates,
 } from "utils/roughHelper";
-import { ACTIONS, CURSOR, ELEMENT_TYPES } from "../../constants";
+import { ACTIONS, CURSOR, ELEMENT_TYPES, KEYBOARD_KEYS } from "../../constants";
 
 import Toolbar from "../toolbar";
+import { dataElements } from "constants/data";
 
 const CanvasDrawing = () => {
   const canvasRef = useRef();
   const textAreaRef = useRef();
   const [elements, setElements, undo, redo] = useHistory([]);
+  // const [elements, setElements, undo, redo] = useHistory(dataElements);
   const [action, setAction] = useState(false);
-  const [tool, setTool] = useState(ELEMENT_TYPES.LINE);
+  const [tool, setTool] = useState(ELEMENT_TYPES.POLYGON);
   const [selectedElement, setSelectedElement] = useState(null);
-
-  console.log(">>> elements", elements);
-  console.log(">>> selectedElement", selectedElement);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    elements.forEach((element) => {
-      if (action === ACTIONS.WRITING && selectedElement.id === element.id)
+    elements.forEach(element => {
+      if (action === ACTIONS.WRITING && selectedElement.id === element.id) {
         return;
-      drawElement(context, element);
+      }
+      drawElement(context, element, selectedElement);
     });
   }, [elements, action, selectedElement]);
 
   useEffect(() => {
-    const undoRedoFunction = (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+    const undoRedoFunction = event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === KEYBOARD_KEYS.Z) {
         if (event.shiftKey) {
           redo();
         } else {
           undo();
         }
+      }
+
+      if ([KEYBOARD_KEYS.ESCAPE, KEYBOARD_KEYS.ENTER].includes(event.key.toLowerCase())) {
+        setAction(ACTIONS.NONE);
+        setSelectedElement(null);
       }
     };
     document.addEventListener("keydown", undoRedoFunction);
@@ -71,16 +76,12 @@ const CanvasDrawing = () => {
         break;
 
       case ELEMENT_TYPES.PENCIL:
-        elementsCopy[id].points = [
-          ...elementsCopy[id].points,
-          { x: x2, y: y2 },
-        ];
+      case ELEMENT_TYPES.POLYGON:
+        elementsCopy[id].points = [...elementsCopy[id].points, { x: x2, y: y2 }];
         break;
 
       case ELEMENT_TYPES.TEXT:
-        const textWidth = canvasRef.current
-          .getContext("2d")
-          .measureText(options.text).width;
+        const textWidth = canvasRef.current.getContext("2d").measureText(options.text).width;
         const textHeight = 24;
         elementsCopy[id] = {
           ...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
@@ -95,23 +96,23 @@ const CanvasDrawing = () => {
     setElements(elementsCopy, true);
   };
 
-  const handleMouseDown = (event) => {
+  const handleMouseDown = event => {
     if (action === ACTIONS.WRITING) return;
 
     const { clientX, clientY } = event;
     if (tool === ELEMENT_TYPES.SELECTION) {
       const element = getElementAtPosition(clientX, clientY, elements);
       if (element) {
-        if (element.type === ELEMENT_TYPES.PENCIL) {
-          const xOffsets = element.points.map((point) => clientX - point.x);
-          const yOffsets = element.points.map((point) => clientY - point.y);
+        if ([ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON].includes(element.type)) {
+          const xOffsets = element.points.map(point => clientX - point.x);
+          const yOffsets = element.points.map(point => clientY - point.y);
           setSelectedElement({ ...element, xOffsets, yOffsets });
         } else {
           const offsetX = clientX - element.x1;
           const offsetY = clientY - element.y1;
           setSelectedElement({ ...element, offsetX, offsetY });
         }
-        setElements((prevState) => prevState);
+        setElements(prevState => prevState);
 
         if (element.position === "inside") {
           setAction(ACTIONS.MOVING);
@@ -120,40 +121,48 @@ const CanvasDrawing = () => {
         }
       }
     } else {
-      const id = elements.length;
-      const element = createElement(
-        id,
-        clientX,
-        clientY,
-        clientX,
-        clientY,
-        tool
-      );
-      setElements((p) => [...p, element]);
-      setSelectedElement(element);
+      if (selectedElement?.type === ELEMENT_TYPES.POLYGON) {
+        const index = elements.length - 1;
+        const { x1, y1 } = elements[index];
+        updateElement(index, x1, y1, clientX, clientY, tool);
+      } else {
+        const id = elements.length;
+        const element = createElement(id, clientX, clientY, clientX, clientY, tool);
+        setElements(p => [...p, element]);
+        setSelectedElement(element);
 
-      setAction(
-        tool === ELEMENT_TYPES.TEXT ? ACTIONS.WRITING : ACTIONS.DRAWING
-      );
+        setAction(tool === ELEMENT_TYPES.TEXT ? ACTIONS.WRITING : ACTIONS.DRAWING);
+      }
     }
   };
 
-  const handleMouseMove = (event) => {
+  const handleMouseMove = event => {
     const { clientX, clientY } = event;
 
     if (tool === ELEMENT_TYPES.SELECTION) {
       const element = getElementAtPosition(clientX, clientY, elements);
-      event.target.style.cursor = element
-        ? cursorForPosition(element.position)
-        : CURSOR.DEFAULT;
+      event.target.style.cursor = element ? cursorForPosition(element.position) : CURSOR.DEFAULT;
     }
 
     if (action === ACTIONS.DRAWING) {
-      const index = elements.length - 1;
-      const { x1, y1 } = elements[index];
-      updateElement(index, x1, y1, clientX, clientY, tool);
+      if (selectedElement.type === ELEMENT_TYPES.POLYGON) {
+        // TODO:
+        const index = elements.length - 1;
+        const { x1, y1 } = elements[index];
+        if (selectedElement.points.length > 1) {
+          selectedElement.points = selectedElement.points.splice(
+            0,
+            selectedElement.points.length - 1
+          );
+        }
+        updateElement(index, x1, y1, clientX, clientY, tool);
+      } else {
+        const index = elements.length - 1;
+        const { x1, y1 } = elements[index];
+        updateElement(index, x1, y1, clientX, clientY, tool);
+      }
     } else if (action === ACTIONS.MOVING) {
-      if ([ELEMENT_TYPES.PENCIL].includes(selectedElement.type)) {
+      if ([ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON].includes(selectedElement.type)) {
         const newPoints = selectedElement.points.map((_, index) => ({
           x: clientX - selectedElement.xOffsets[index],
           y: clientY - selectedElement.yOffsets[index],
@@ -165,38 +174,26 @@ const CanvasDrawing = () => {
           points: newPoints,
         };
         setElements(elementsCopy, true);
+      } else if (ELEMENT_TYPES.POLYGON === selectedElement.type) {
+        // TODO:
       } else {
         const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement;
         const width = x2 - x1;
         const height = y2 - y1;
         const newX = clientX - offsetX;
         const newY = clientY - offsetY;
-        const options =
-          type === ELEMENT_TYPES.TEXT ? { text: selectedElement.text } : {};
+        const options = type === ELEMENT_TYPES.TEXT ? { text: selectedElement.text } : {};
 
-        updateElement(
-          id,
-          newX,
-          newY,
-          newX + width,
-          newY + height,
-          type,
-          options
-        );
+        updateElement(id, newX, newY, newX + width, newY + height, type, options);
       }
     } else if (action === ACTIONS.RESIZING) {
       const { id, type, position, ...coordinates } = selectedElement;
-      const { x1, y1, x2, y2 } = resizedCoordinates(
-        clientX,
-        clientY,
-        position,
-        coordinates
-      );
+      const { x1, y1, x2, y2 } = resizedCoordinates(clientX, clientY, position, coordinates);
       updateElement(id, x1, y1, x2, y2, type);
     }
   };
 
-  const handleMouseUp = (event) => {
+  const handleMouseUp = event => {
     const { clientX, clientY } = event;
     if (selectedElement) {
       if (
@@ -211,22 +208,20 @@ const CanvasDrawing = () => {
       const index = selectedElement.id;
       const { id, type } = elements[index];
 
-      if (
-        (action === ACTIONS.DRAWING || action === ACTIONS.RESIZING) &&
-        adjustmentRequired(type)
-      ) {
+      if ((action === ACTIONS.DRAWING || action === ACTIONS.RESIZING) && adjustmentRequired(type)) {
         const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index]);
         updateElement(id, x1, y1, x2, y2, type);
       }
     }
 
     if (action === ACTIONS.WRITING) return;
+    if (action === ACTIONS.DRAWING && selectedElement.type === ELEMENT_TYPES.POLYGON) return;
 
     setAction(ACTIONS.NONE);
     setSelectedElement(null);
   };
 
-  const handleTextBlur = (event) => {
+  const handleTextBlur = event => {
     const { id, x1, y1, type } = selectedElement;
 
     setAction(ACTIONS.NONE);
@@ -238,7 +233,7 @@ const CanvasDrawing = () => {
 
   return (
     <>
-      <Toolbar selectedTool={tool} onChange={(value) => setTool(value)} />
+      <Toolbar selectedTool={tool} onChange={value => setTool(value)} />
       {action === ACTIONS.WRITING ? (
         <textarea
           ref={textAreaRef}
