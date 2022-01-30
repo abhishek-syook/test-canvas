@@ -1,33 +1,13 @@
-import { getStroke } from "perfect-freehand";
+import { CURSOR, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
 
-import { CURSOR, ELEMENT_TYPES } from "../constants";
+export const drawElement = (context, element, selectedElement) => {
+  context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
 
-const getSvgPathFromStroke = (stroke) => {
-  if (!stroke.length) return "";
-
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ["M", ...stroke[0], "Q"]
-  );
-
-  d.push("Z");
-  return d.join(" ");
-};
-
-export const drawElement = (context, element) => {
   switch (element.type) {
     case ELEMENT_TYPES.RECTANGLE:
-      context.strokeRect(
-        element.x1,
-        element.y1,
-        element.x2 - element.x1,
-        element.y2 - element.y1
-      );
+      context.strokeRect(element.x1, element.y1, element.x2 - element.x1, element.y2 - element.y1);
       break;
+
     case ELEMENT_TYPES.LINE:
       context.beginPath();
       context.moveTo(element.x1, element.y1);
@@ -36,8 +16,12 @@ export const drawElement = (context, element) => {
       break;
 
     case ELEMENT_TYPES.PENCIL:
-      const stroke = getSvgPathFromStroke(getStroke(element.points));
-      context.fill(new Path2D(stroke));
+      context.beginPath();
+      context.moveTo(element.points[0].x, element.points[0].y);
+      element.points.forEach(({ x, y }) => {
+        context.lineTo(x, y);
+      });
+      context.stroke();
       break;
 
     case ELEMENT_TYPES.TEXT:
@@ -45,6 +29,25 @@ export const drawElement = (context, element) => {
       context.textAlign = "start";
       context.font = "24px sans-serif";
       context.fillText(element.text, element.x1, element.y1);
+      break;
+
+    case ELEMENT_TYPES.POLYGON:
+      context.beginPath();
+      context.moveTo(element.points[0].x, element.points[0].y);
+      element.points.forEach(({ x, y }) => {
+        context.lineTo(x, y);
+      });
+      context.closePath();
+      context.stroke();
+      break;
+
+    case ELEMENT_TYPES.POLYLINE:
+      context.beginPath();
+      context.moveTo(element.points[0].x, element.points[0].y);
+      element.points.forEach(({ x, y }) => {
+        context.lineTo(x, y);
+      });
+      context.stroke();
       break;
 
     default:
@@ -61,6 +64,8 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
       return { id, x1, y1, x2, y2, type };
 
     case ELEMENT_TYPES.PENCIL:
+    case ELEMENT_TYPES.POLYGON:
+    case ELEMENT_TYPES.POLYLINE:
       return { id, type, points: [{ x: x1, y: y1 }] };
 
     case ELEMENT_TYPES.TEXT:
@@ -71,8 +76,10 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
   }
 };
 
-const nearPoint = (x, y, x1, y1, name) => {
-  return Math.abs(x - x1) < 5 && Math.abs(y - y1) < 5 ? name : null;
+export const nearPoint = (x, y, x1, y1, name) => {
+  return Math.abs(x - x1) < NEAR_POINT_DISTANCE && Math.abs(y - y1) < NEAR_POINT_DISTANCE
+    ? name
+    : null;
 };
 
 const onLine = (x1, y1, x2, y2, x, y, maxDistance = 1) => {
@@ -97,41 +104,62 @@ const PositionWithinElement = (x, y, element) => {
       const topRight = nearPoint(x, y, x2, y1, "tr");
       const bottomLeft = nearPoint(x, y, x1, y2, "bl");
       const bottomRight = nearPoint(x, y, x2, y2, "br");
-      const rectInside =
-        x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
+      const rectInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
       return topLeft || topRight || bottomLeft || bottomRight || rectInside;
 
     case ELEMENT_TYPES.PENCIL:
       const betweenAnyPoint = element.points.some((point, index) => {
         const nextPoint = element.points[index + 1];
         if (!nextPoint) return false;
-        return (
-          onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !== null
-        );
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
       return betweenAnyPoint ? "inside" : null;
 
+    case ELEMENT_TYPES.POLYGON:
+      const isInBetweenAnyPoint = element.points.some((point, index) => {
+        let nextIndex = index + 1;
+        nextIndex = element.points.length === nextIndex ? 0 : nextIndex;
+        const nextPoint = element.points[nextIndex];
+        if (!nextPoint) return false;
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
+      });
+
+      const hasPointOver = element.points.some((point, index) => {
+        return nearPoint(x, y, point.x, point.y, "start");
+      });
+
+      return hasPointOver ? "start" : isInBetweenAnyPoint ? "inside" : null;
+
+    case ELEMENT_TYPES.POLYLINE:
+      const isBetweenAnyPointPolyline = element.points.some((point, index) => {
+        const nextPoint = element.points[index + 1];
+        if (!nextPoint) return false;
+        return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
+      });
+      const hasPointOverPolyline = element.points.some((point, index) => {
+        return nearPoint(x, y, point.x, point.y, "start");
+      });
+      return hasPointOverPolyline ? "start" : isBetweenAnyPointPolyline ? "inside" : null;
+
     case ELEMENT_TYPES.TEXT:
-      const textInside =
-        x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
+      const textInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
       return textInside;
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
 };
 
-const distance = (a, b) =>
-  Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+const distance = (a, b) => Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
 
 export const getElementAtPosition = (x, y, elements) => {
-  const eles = elements.map((element) => ({
+  const eles = elements.map(element => ({
     ...element,
     position: PositionWithinElement(x, y, element),
   }));
-  return eles.find((element) => element.position !== null);
+  return eles.find(element => element.position !== null);
 };
 
-export const adjustElementCoordinates = (element) => {
+export const adjustElementCoordinates = element => {
   const { type, x1, y1, x2, y2 } = element;
   const minX = Math.min(x1, x2);
   const maxX = Math.max(x1, x2);
@@ -149,7 +177,7 @@ export const adjustElementCoordinates = (element) => {
   }
 };
 
-export const cursorForPosition = (position) => {
+export const cursorForPosition = position => {
   switch (position) {
     case "tl":
     case "br":
@@ -184,5 +212,5 @@ export const resizedCoordinates = (clientX, clientY, position, coordinates) => {
   }
 };
 
-export const adjustmentRequired = (type) =>
+export const adjustmentRequired = type =>
   [ELEMENT_TYPES.LINE, ELEMENT_TYPES.RECTANGLE].includes(type);

@@ -1,10 +1,13 @@
+export const NEAR_POINT_DISTANCE = 5;
+
 export const ELEMENT_TYPES = Object.freeze({
   LINE: "line",
   RECTANGLE: "rectangle",
   SELECTION: "selection",
   PENCIL: "pencil",
   TEXT: "text",
-  POLYLINE: "polyline"
+  POLYGON: "polygon",
+  POLYLINE: "polyline",
 });
 
 export const ACTIONS = Object.freeze({
@@ -20,4 +23,10 @@ export const CURSOR = Object.freeze({
   MOVE: "move",
   NWSE_RESIZE: "nwse-resize",
   NESW_RESIZE: "nesw-resize",
+});
+
+export const KEYBOARD_KEYS = Object.freeze({
+  ENTER: "enter",
+  ESCAPE: "escape",
+  Z: "z",
 });
