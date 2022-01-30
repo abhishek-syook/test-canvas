@@ -1,4 +1,4 @@
-import { CURSOR, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
+import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
 
 export const drawElement = (context, element, selectedElement) => {
   context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
@@ -50,6 +50,12 @@ export const drawElement = (context, element, selectedElement) => {
       context.stroke();
       break;
 
+    case ELEMENT_TYPES.CIRCLE:
+      context.beginPath();
+      context.arc(element.x, element.y, element.radius, 0, Math.PI * 2, true);
+      context.stroke();
+      break;
+
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
@@ -71,10 +77,17 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
     case ELEMENT_TYPES.TEXT:
       return { id, type, x1, y1, x2, y2, text: "Hello" };
 
+    case ELEMENT_TYPES.CIRCLE:
+      const radius = getRadius(x1, y1, x2, y2);
+      return { id, x: x1, y: y1, radius, type };
+
     default:
       throw Error(`Type not recognised: ${type}`);
   }
 };
+
+export const getRadius = (x1, y1, x2, y2) =>
+  Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 
 export const nearPoint = (x, y, x1, y1, name) => {
   return Math.abs(x - x1) < NEAR_POINT_DISTANCE && Math.abs(y - y1) < NEAR_POINT_DISTANCE
@@ -87,7 +100,7 @@ const onLine = (x1, y1, x2, y2, x, y, maxDistance = 1) => {
   const b = { x: x2, y: y2 };
   const c = { x, y };
   const offset = distance(a, b) - (distance(a, c) + distance(b, c));
-  return Math.abs(offset) < maxDistance ? "inside" : null;
+  return Math.abs(offset) < maxDistance ? CURSOR_POSITION.INSIDE : null;
 };
 
 const PositionWithinElement = (x, y, element) => {
@@ -95,16 +108,16 @@ const PositionWithinElement = (x, y, element) => {
   switch (type) {
     case ELEMENT_TYPES.LINE:
       const lineInside = onLine(x1, y1, x2, y2, x, y);
-      const start = nearPoint(x, y, x1, y1, "start");
-      const end = nearPoint(x, y, x2, y2, "end");
+      const start = nearPoint(x, y, x1, y1, CURSOR_POSITION.START);
+      const end = nearPoint(x, y, x2, y2, CURSOR_POSITION.END);
       return start || end || lineInside;
 
     case ELEMENT_TYPES.RECTANGLE:
-      const topLeft = nearPoint(x, y, x1, y1, "tl");
-      const topRight = nearPoint(x, y, x2, y1, "tr");
-      const bottomLeft = nearPoint(x, y, x1, y2, "bl");
-      const bottomRight = nearPoint(x, y, x2, y2, "br");
-      const rectInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
+      const topLeft = nearPoint(x, y, x1, y1, CURSOR_POSITION.TOP_LEFT);
+      const topRight = nearPoint(x, y, x2, y1, CURSOR_POSITION.TOP_RIGHT);
+      const bottomLeft = nearPoint(x, y, x1, y2, CURSOR_POSITION.BOTTOM_LEFT);
+      const bottomRight = nearPoint(x, y, x2, y2, CURSOR_POSITION.BOTTOM_RIGHT);
+      const rectInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? CURSOR_POSITION.INSIDE : null;
       return topLeft || topRight || bottomLeft || bottomRight || rectInside;
 
     case ELEMENT_TYPES.PENCIL:
@@ -113,7 +126,7 @@ const PositionWithinElement = (x, y, element) => {
         if (!nextPoint) return false;
         return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
-      return betweenAnyPoint ? "inside" : null;
+      return betweenAnyPoint ? CURSOR_POSITION.INSIDE : null;
 
     case ELEMENT_TYPES.POLYGON:
       const isInBetweenAnyPoint = element.points.some((point, index) => {
@@ -125,10 +138,14 @@ const PositionWithinElement = (x, y, element) => {
       });
 
       const hasPointOver = element.points.some((point, index) => {
-        return nearPoint(x, y, point.x, point.y, "start");
+        return nearPoint(x, y, point.x, point.y, CURSOR_POSITION.START);
       });
 
-      return hasPointOver ? "start" : isInBetweenAnyPoint ? "inside" : null;
+      return hasPointOver
+        ? CURSOR_POSITION.START
+        : isInBetweenAnyPoint
+        ? CURSOR_POSITION.INSIDE
+        : null;
 
     case ELEMENT_TYPES.POLYLINE:
       const isBetweenAnyPointPolyline = element.points.some((point, index) => {
@@ -137,13 +154,28 @@ const PositionWithinElement = (x, y, element) => {
         return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
       });
       const hasPointOverPolyline = element.points.some((point, index) => {
-        return nearPoint(x, y, point.x, point.y, "start");
+        return nearPoint(x, y, point.x, point.y, CURSOR_POSITION.START);
       });
-      return hasPointOverPolyline ? "start" : isBetweenAnyPointPolyline ? "inside" : null;
+      return hasPointOverPolyline
+        ? CURSOR_POSITION.START
+        : isBetweenAnyPointPolyline
+        ? CURSOR_POSITION.INSIDE
+        : null;
 
     case ELEMENT_TYPES.TEXT:
-      const textInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? "inside" : null;
+      const textInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? CURSOR_POSITION.INSIDE : null;
       return textInside;
+
+    case ELEMENT_TYPES.CIRCLE:
+      const a = { x, y };
+      const b = { x: element.x, y: element.y };
+      const inside = distance(a, b) <= element.radius ? CURSOR_POSITION.INSIDE : null;
+      const resizeCircle =
+        distance(a, b) - element.radius <= NEAR_POINT_DISTANCE && distance(a, b) >= element.radius
+          ? CURSOR_POSITION.BOTTOM_LEFT
+          : null;
+      return resizeCircle || inside;
+
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
@@ -179,14 +211,14 @@ export const adjustElementCoordinates = element => {
 
 export const cursorForPosition = position => {
   switch (position) {
-    case "tl":
-    case "br":
-    case "start":
-    case "end":
+    case CURSOR_POSITION.TOP_LEFT:
+    case CURSOR_POSITION.BOTTOM_RIGHT:
+    case CURSOR_POSITION.START:
+    case CURSOR_POSITION.END:
       return CURSOR.NWSE_RESIZE;
 
-    case "tr":
-    case "bl":
+    case CURSOR_POSITION.TOP_RIGHT:
+    case CURSOR_POSITION.BOTTOM_LEFT:
       return CURSOR.NESW_RESIZE;
 
     default:
@@ -197,15 +229,15 @@ export const cursorForPosition = position => {
 export const resizedCoordinates = (clientX, clientY, position, coordinates) => {
   const { x1, y1, x2, y2 } = coordinates;
   switch (position) {
-    case "tl":
-    case "start":
+    case CURSOR_POSITION.TOP_LEFT:
+    case CURSOR_POSITION.START:
       return { x1: clientX, y1: clientY, x2, y2 };
-    case "tr":
+    case CURSOR_POSITION.TOP_RIGHT:
       return { x1, y1: clientY, x2: clientX, y2 };
-    case "bl":
+    case CURSOR_POSITION.BOTTOM_LEFT:
       return { x1: clientX, y1, x2, y2: clientY };
-    case "br":
-    case "end":
+    case CURSOR_POSITION.BOTTOM_RIGHT:
+    case CURSOR_POSITION.END:
       return { x1, y1, x2: clientX, y2: clientY };
     default:
       return null;
