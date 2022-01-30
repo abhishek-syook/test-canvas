@@ -239,14 +239,6 @@ const CanvasDrawing = () => {
         setElements(elementsCopy, true);
       } else {
         const { id, type, position, ...coordinates } = selectedElement;
-        console.log(
-          ">>>>>>>>>",
-          clientX,
-          clientY,
-          position,
-          coordinates,
-          resizedCoordinates(clientX, clientY, position, coordinates)
-        );
         const { x1, y1, x2, y2 } = resizedCoordinates(clientX, clientY, position, coordinates);
         updateElement(id, x1, y1, x2, y2, type);
       }
