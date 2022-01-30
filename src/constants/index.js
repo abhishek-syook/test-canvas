@@ -8,6 +8,8 @@ export const ELEMENT_TYPES = Object.freeze({
   TEXT: "text",
   POLYGON: "polygon",
   POLYLINE: "polyline",
+  CIRCLE: "circle",
+  ARC: "arc",
 });
 
 export const ACTIONS = Object.freeze({
@@ -29,4 +31,14 @@ export const KEYBOARD_KEYS = Object.freeze({
   ENTER: "enter",
   ESCAPE: "escape",
   Z: "z",
+});
+
+export const CURSOR_POSITION = Object.freeze({
+  END: "END",
+  START: "START",
+  INSIDE: "INSIDE",
+  TOP_LEFT: "TOP_LEFT",
+  TOP_RIGHT: "TOP_RIGHT",
+  BOTTOM_LEFT: "BOTTOM_LEFT",
+  BOTTOM_RIGHT: "BOTTOM_RIGHT",
 });

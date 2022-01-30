@@ -9,10 +9,11 @@ import {
   cursorForPosition,
   drawElement,
   getElementAtPosition,
+  getRadius,
   nearPoint,
   resizedCoordinates,
 } from "utils/roughHelper";
-import { ACTIONS, CURSOR, ELEMENT_TYPES, KEYBOARD_KEYS } from "../../constants";
+import { ACTIONS, CURSOR, CURSOR_POSITION, ELEMENT_TYPES, KEYBOARD_KEYS } from "../../constants";
 
 import Toolbar from "../toolbar";
 import cloneDeep from "utils/cloneDeep";
@@ -22,7 +23,7 @@ const CanvasDrawing = () => {
   const textAreaRef = useRef();
   const [elements, setElements, undo, redo] = useHistory([]);
   const [action, setAction] = useState(false);
-  const [tool, setTool] = useState(ELEMENT_TYPES.POLYLINE);
+  const [tool, setTool] = useState(ELEMENT_TYPES.CIRCLE);
   const [selectedElement, setSelectedElement] = useState(null);
 
   useLayoutEffect(() => {
@@ -90,6 +91,10 @@ const CanvasDrawing = () => {
         };
         break;
 
+      case ELEMENT_TYPES.CIRCLE:
+        elementsCopy[id] = createElement(id, x1, y1, x2, y2, type);
+        break;
+
       default:
         throw Error(`Type not recognised: ${type}`);
     }
@@ -112,6 +117,10 @@ const CanvasDrawing = () => {
           const xOffsets = element.points.map(point => clientX - point.x);
           const yOffsets = element.points.map(point => clientY - point.y);
           setSelectedElement({ ...element, xOffsets, yOffsets });
+        } else if (ELEMENT_TYPES.CIRCLE === element.type) {
+          const offsetX = clientX - element.x;
+          const offsetY = clientY - element.y;
+          setSelectedElement({ ...element, offsetX, offsetY });
         } else {
           const offsetX = clientX - element.x1;
           const offsetY = clientY - element.y1;
@@ -119,7 +128,7 @@ const CanvasDrawing = () => {
         }
         setElements(prevState => prevState);
 
-        if (element.position === "inside") {
+        if (element.position === CURSOR_POSITION.INSIDE) {
           setAction(ACTIONS.MOVING);
         } else {
           setAction(ACTIONS.RESIZING);
@@ -160,6 +169,12 @@ const CanvasDrawing = () => {
           );
         }
         updateElement(index, x1, y1, clientX, clientY, tool);
+      } else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
+        const { id, x, y } = selectedElement;
+        const elementsCopy = [...elements];
+        const radius = getRadius(x, y, clientX, clientY);
+        elementsCopy[id] = { ...elementsCopy[id], radius: radius };
+        setElements(elementsCopy, true);
       } else {
         const index = elements.length - 1;
         const { x1, y1 } = elements[index];
@@ -182,8 +197,11 @@ const CanvasDrawing = () => {
           points: newPoints,
         };
         setElements(elementsCopy, true);
-      } else if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
-        // TODO:
+      } else if ([ELEMENT_TYPES.CIRCLE].includes(selectedElement.type)) {
+        const { id, offsetX, offsetY } = selectedElement;
+        const elementsCopy = [...elements];
+        elementsCopy[id] = { ...elementsCopy[id], x: clientX - offsetX, y: clientY - offsetY };
+        setElements(elementsCopy, true);
       } else {
         const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement;
         const width = x2 - x1;
@@ -213,6 +231,12 @@ const CanvasDrawing = () => {
           setSelectedElement(selectedElementCopy);
           setElements(elementsCopy, true);
         }
+      } else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
+        const { id, x, y } = selectedElement;
+        const elementsCopy = [...elements];
+        const radius = getRadius(x, y, clientX, clientY);
+        elementsCopy[id] = { ...elementsCopy[id], radius: radius };
+        setElements(elementsCopy, true);
       } else {
         const { id, type, position, ...coordinates } = selectedElement;
         const { x1, y1, x2, y2 } = resizedCoordinates(clientX, clientY, position, coordinates);
