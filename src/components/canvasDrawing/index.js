@@ -17,6 +17,8 @@ import { ACTIONS, CURSOR, CURSOR_POSITION, ELEMENT_TYPES, KEYBOARD_KEYS } from "
 
 import Toolbar from "../toolbar";
 import cloneDeep from "utils/cloneDeep";
+import drawGrid from "utils/drawGrid";
+import GridToolbar from "components/toolbar/gridToolbar";
 
 const CanvasDrawing = () => {
   const canvasRef = useRef();
@@ -25,19 +27,21 @@ const CanvasDrawing = () => {
   const [action, setAction] = useState(false);
   const [tool, setTool] = useState(ELEMENT_TYPES.CIRCLE);
   const [selectedElement, setSelectedElement] = useState(null);
+  const [gridObj, setGridObj] = useState({ isEnable: true, snapSize: 10 });
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    drawGrid({ context, ...gridObj });
     elements.forEach(element => {
       if (action === ACTIONS.WRITING && selectedElement.id === element.id) {
         return;
       }
       drawElement(context, element, selectedElement);
     });
-  }, [elements, action, selectedElement]);
+  }, [elements, action, selectedElement, gridObj]);
 
   useEffect(() => {
     const undoRedoFunction = event => {
@@ -320,6 +324,7 @@ const CanvasDrawing = () => {
         onMouseMove={handleMouseMove}
       />
       <HistoryToolbar undo={undo} redo={redo} />
+      <GridToolbar {...gridObj} onChange={setGridObj} />
     </>
   );
 };
