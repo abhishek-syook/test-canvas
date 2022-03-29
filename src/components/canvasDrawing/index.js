@@ -27,7 +27,7 @@ const CanvasDrawing = () => {
   const [action, setAction] = useState(false);
   const [tool, setTool] = useState(ELEMENT_TYPES.CIRCLE);
   const [selectedElement, setSelectedElement] = useState(null);
-  const [gridObj, setGridObj] = useState({ isEnable: true, snapSize: 10 });
+  const [gridObj, setGridObj] = useState({ isEnable: false, snapSize: 10 });
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;

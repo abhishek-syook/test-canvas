@@ -23,18 +23,50 @@ export const dataElements = [
   },
   {
     id: 1,
-    type: "line",
-    x1: 270,
-    y1: 150,
-    x2: 763,
-    y2: 142,
+    x1: 232,
+    y1: 100,
+    x2: 487,
+    y2: 283,
+    type: "rectangle",
   },
   {
     id: 2,
-    x1: 352,
-    y1: 99,
-    x2: 587,
-    y2: 243,
-    type: "rectangle",
+    type: "polygon",
+    points: [
+      {
+        x: 502,
+        y: 96,
+      },
+      {
+        x: 752,
+        y: 96,
+      },
+      {
+        x: 756,
+        y: 302,
+      },
+      {
+        x: 505,
+        y: 297,
+      },
+      {
+        x: 578,
+        y: 202,
+      },
+    ],
+  },
+  {
+    id: 3,
+    type: "polygon",
+    points: [
+      {
+        x: 972,
+        y: 320,
+      },
+      {
+        x: 404,
+        y: 418,
+      },
+    ],
   },
 ];
