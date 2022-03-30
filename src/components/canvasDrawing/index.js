@@ -25,7 +25,7 @@ const CanvasDrawing = () => {
   const textAreaRef = useRef();
   const [elements, setElements, undo, redo] = useHistory([]);
   const [action, setAction] = useState(false);
-  const [tool, setTool] = useState(ELEMENT_TYPES.CIRCLE);
+  const [tool, setTool] = useState(ELEMENT_TYPES.SELECTION);
   const [selectedElement, setSelectedElement] = useState(null);
   const [gridObj, setGridObj] = useState({ isEnable: false, snapSize: 10 });
 
@@ -99,6 +99,10 @@ const CanvasDrawing = () => {
         elementsCopy[id] = createElement(id, x1, y1, x2, y2, type);
         break;
 
+      case ELEMENT_TYPES.GATEWAY:
+        elementsCopy[id] = createElement(id, x1, y1, x2, y2, type);
+        break;
+
       default:
         throw Error(`Type not recognised: ${type}`);
     }
@@ -124,6 +128,10 @@ const CanvasDrawing = () => {
         } else if (ELEMENT_TYPES.CIRCLE === element.type) {
           const offsetX = clientX - element.x;
           const offsetY = clientY - element.y;
+          setSelectedElement({ ...element, offsetX, offsetY });
+        } else if (ELEMENT_TYPES.GATEWAY === element.type) {
+          const offsetX = clientX - element.point.x;
+          const offsetY = clientY - element.point.y;
           setSelectedElement({ ...element, offsetX, offsetY });
         } else {
           const offsetX = clientX - element.x1;
@@ -179,6 +187,14 @@ const CanvasDrawing = () => {
         const radius = getRadius(x, y, clientX, clientY);
         elementsCopy[id] = { ...elementsCopy[id], radius: radius };
         setElements(elementsCopy, true);
+      } else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
+        const { id } = selectedElement;
+        const elementsCopy = [...elements];
+        elementsCopy[id] = {
+          ...elementsCopy[id],
+          point: { x: clientX, y: clientY },
+        };
+        setElements(elementsCopy, true);
       } else {
         const index = elements.length - 1;
         const { x1, y1 } = elements[index];
@@ -205,6 +221,14 @@ const CanvasDrawing = () => {
         const { id, offsetX, offsetY } = selectedElement;
         const elementsCopy = [...elements];
         elementsCopy[id] = { ...elementsCopy[id], x: clientX - offsetX, y: clientY - offsetY };
+        setElements(elementsCopy, true);
+      } else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
+        const { id, offsetX, offsetY } = selectedElement;
+        const elementsCopy = [...elements];
+        elementsCopy[id] = {
+          ...elementsCopy[id],
+          point: { x: clientX - offsetX, y: clientY - offsetY },
+        };
         setElements(elementsCopy, true);
       } else {
         const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement;

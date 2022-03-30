@@ -10,6 +10,9 @@ export const ELEMENT_TYPES = Object.freeze({
   POLYLINE: "polyline",
   CIRCLE: "circle",
   ARC: "arc",
+
+  // shapes
+  GATEWAY: "gateway",
 });
 
 export const ACTIONS = Object.freeze({
