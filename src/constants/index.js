@@ -18,6 +18,7 @@ export const ACTIONS = Object.freeze({
   RESIZING: "resizing",
   DRAWING: "drawing",
   WRITING: "writing",
+  PANNING: "panning"
 });
 
 export const CURSOR = Object.freeze({
@@ -42,3 +43,7 @@ export const CURSOR_POSITION = Object.freeze({
   BOTTOM_LEFT: "BOTTOM_LEFT",
   BOTTOM_RIGHT: "BOTTOM_RIGHT",
 });
+
+export const ORIGIN = Object.freeze({ x: 0, y: 0 });
+
+export const ZOOM_SENSITIVITY = 500; // bigger for lower zoom per scroll

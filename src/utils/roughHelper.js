@@ -246,3 +246,25 @@ export const resizedCoordinates = (clientX, clientY, position, coordinates) => {
 
 export const adjustmentRequired = type =>
   [ELEMENT_TYPES.LINE, ELEMENT_TYPES.RECTANGLE].includes(type);
+
+export const diffPoints = (p1, p2) => {
+  return { x: p1.x - p2.x, y: p1.y - p2.y };
+}
+  
+export const addPoints = (p1, p2) => {
+  return { x: p1.x + p2.x, y: p1.y + p2.y };
+}
+
+export const scalePoint = (p1, scale) => {
+  return { x: p1.x / scale, y: p1.y / scale };
+}
+
+export const updatedPoints = (scale, client, viewPort) => {
+  if(scale === 1 && !(viewPort.x && viewPort.y)){
+    return { updatedX: client.x, updatedY: client.y }
+  } else {
+    const x = (client.x / scale) + viewPort.x 
+    const y = (client.y / scale) + viewPort.y
+    return { updatedX: x, updatedY: y }
+  }
+}
