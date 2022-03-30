@@ -23,6 +23,7 @@ import Toolbar from "../toolbar";
 import cloneDeep from "utils/cloneDeep";
 import drawGrid from "utils/drawGrid";
 import GridToolbar from "components/toolbar/gridToolbar";
+import ZoomToolbar from "components/toolbar/zoomToolbar";
 
 const CanvasDrawing = (props) => {  
   const canvasRef = useRef();
@@ -464,11 +465,7 @@ const CanvasDrawing = (props) => {
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
       />
-      <div style={{ position: "fixed", bottom: 0, padding: 40 }}>
-          <button>-</button>
-          <button onClick={() => context && reset(context)}>{Math.round(scale * 10) * 10}%</button>
-          <button>+</button>
-      </div>
+      <ZoomToolbar context={context} reset={reset} scale={scale}/>
       <HistoryToolbar undo={undo} redo={redo} />
       <GridToolbar {...gridObj} onChange={setGridObj} />
     </>
