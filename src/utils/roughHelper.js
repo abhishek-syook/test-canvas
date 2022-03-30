@@ -1,11 +1,11 @@
 import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
 
-import image from "../assets/wifi.jpeg";
-import wifiSvg from "../assets/wifi.svg";
-const imageUrl =
-  "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.stellarnet.us%2Fwp-content%2Fuploads%2Fwifi-icon.png&f=1&nofb=1";
-const imageData =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAARCAYAAADHeGwwAAAAAXNSR0IArs4c6QAAAjJJREFUOE9tVctuUzEQPePbJFLUWxqQ2LOq+CUQrLqDDf+CKAKxQP2jLuhHkE0TUKty7UHzsD33gheJY4/ncebMCTEzgwEmgNpGjgjEgHxsNiMe/5AZiQ2Alxcv8OP2Rh7BrfVclj/TOyrMbI7avW6IRjsLTs2EoA8sjtsAzMfg3t8Rg7QCX6UUDCdP9HHPdR44Op3v7UUpB5AnpqjUACmdqeNldqVYZrXAWqx8P9zfY7t93pNRhwANhDwdNKAGoDQqFNIDK6eA+bcH9N54iIh3RHY4OUcp2frmCHE5SjWnipG4txKPs8bJXaJTaQqIewrr1QYPj/uWvVbIBZTOrc0OExHG1uVS7swJMT5dfcP7dx8WTe4BYpcKH60+L4nozOBRErLwSBNs1FTIGkO8NmVEp2EgUKMT86HGcLpqD0rgDEGcRxbKo8jhznHrRqJx1mQu3d5snabyY73aYcqTwvT9+jPevH71L33CMHqzQMMW4EF/Xl6+xdcvH1tSNmhekLaaxj40DEzThNV654jFHgA53yGlZMxjIA0jhDl1aY0Voki5SkUp30i6GNueH2jIyNOvdrIUhSYVpkVzIZFqKn2zYKsjCuSSsRp2LbTi7nch/aBFy1OHTOgm72T8ZRCbIPrQVb2KsDSuVsrGJnc17frTwPmPIHas+7SbWZVndjVtIqwi3Tlspk5DRkqD7kUU42pOg32PMZuDKrPLChgDGQ1l7X/u8fTZLvxnuL0n7iOr5PgLf6hO8brzWoIAAAAASUVORK5CYII=";
+// import image from "../assets/wifi.jpeg";
+// import wifiSvg from "../assets/wifi.svg";
+// const imageUrl =
+//   "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.stellarnet.us%2Fwp-content%2Fuploads%2Fwifi-icon.png&f=1&nofb=1";
+// const imageData =
+//   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAARCAYAAADHeGwwAAAAAXNSR0IArs4c6QAAAjJJREFUOE9tVctuUzEQPePbJFLUWxqQ2LOq+CUQrLqDDf+CKAKxQP2jLuhHkE0TUKty7UHzsD33gheJY4/ncebMCTEzgwEmgNpGjgjEgHxsNiMe/5AZiQ2Alxcv8OP2Rh7BrfVclj/TOyrMbI7avW6IRjsLTs2EoA8sjtsAzMfg3t8Rg7QCX6UUDCdP9HHPdR44Op3v7UUpB5AnpqjUACmdqeNldqVYZrXAWqx8P9zfY7t93pNRhwANhDwdNKAGoDQqFNIDK6eA+bcH9N54iIh3RHY4OUcp2frmCHE5SjWnipG4txKPs8bJXaJTaQqIewrr1QYPj/uWvVbIBZTOrc0OExHG1uVS7swJMT5dfcP7dx8WTe4BYpcKH60+L4nozOBRErLwSBNs1FTIGkO8NmVEp2EgUKMT86HGcLpqD0rgDEGcRxbKo8jhznHrRqJx1mQu3d5snabyY73aYcqTwvT9+jPevH71L33CMHqzQMMW4EF/Xl6+xdcvH1tSNmhekLaaxj40DEzThNV654jFHgA53yGlZMxjIA0jhDl1aY0Voki5SkUp30i6GNueH2jIyNOvdrIUhSYVpkVzIZFqKn2zYKsjCuSSsRp2LbTi7nch/aBFy1OHTOgm72T8ZRCbIPrQVb2KsDSuVsrGJnc17frTwPmPIHas+7SbWZVndjVtIqwi3Tlspk5DRkqD7kUU42pOg32PMZuDKrPLChgDGQ1l7X/u8fTZLvxnuL0n7iOr5PgLf6hO8brzWoIAAAAASUVORK5CYII=";
 
 export const drawElement = (context, element, selectedElement) => {
   context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";

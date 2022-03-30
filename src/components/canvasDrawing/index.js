@@ -274,8 +274,8 @@ const CanvasDrawing = (props) => {
           const offsetY = updatedY - element.y;
           setSelectedElement({ ...element, offsetX, offsetY });
         } else if (ELEMENT_TYPES.GATEWAY === element.type) {
-          const offsetX = clientX - element.point.x;
-          const offsetY = clientY - element.point.y;
+          const offsetX = updatedX - element.point.x;
+          const offsetY = updatedY - element.point.y;
           setSelectedElement({ ...element, offsetX, offsetY });
         } else {
           const offsetX = updatedX - element.x1;
@@ -339,7 +339,7 @@ const CanvasDrawing = (props) => {
         const elementsCopy = [...elements];
         elementsCopy[id] = {
           ...elementsCopy[id],
-          point: { x: clientX, y: clientY },
+          point: { x: updatedX, y: updatedY },
         };
         setElements(elementsCopy, true);
       } else {
@@ -383,7 +383,7 @@ const CanvasDrawing = (props) => {
         const elementsCopy = [...elements];
         elementsCopy[id] = {
           ...elementsCopy[id],
-          point: { x: clientX - offsetX, y: clientY - offsetY },
+          point: { x: updatedX - offsetX, y: updatedY - offsetY },
         };
         setElements(elementsCopy, true);
       } else {
