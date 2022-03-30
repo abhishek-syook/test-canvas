@@ -67,6 +67,14 @@ const Toolbar = ({ selectedTool, onChange }) => {
         onChange={() => onChange(ELEMENT_TYPES.CIRCLE)}
       />
       <label htmlFor="circle">Circle</label>
+
+      <input
+        type="radio"
+        id="gateway"
+        checked={selectedTool === ELEMENT_TYPES.GATEWAY}
+        onChange={() => onChange(ELEMENT_TYPES.GATEWAY)}
+      />
+      <label htmlFor="gateway">Gateway</label>
     </div>
   );
 };

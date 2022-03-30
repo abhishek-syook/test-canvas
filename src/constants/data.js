@@ -69,4 +69,9 @@ export const dataElements = [
       },
     ],
   },
+  {
+    id: 4,
+    type: "gateway",
+    point: { x: 100, y: 200 },
+  },
 ];

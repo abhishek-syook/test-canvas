@@ -1,5 +1,12 @@
 import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
 
+import image from "../assets/wifi.jpeg";
+import wifiSvg from "../assets/wifi.svg";
+const imageUrl =
+  "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.stellarnet.us%2Fwp-content%2Fuploads%2Fwifi-icon.png&f=1&nofb=1";
+const imageData =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAARCAYAAADHeGwwAAAAAXNSR0IArs4c6QAAAjJJREFUOE9tVctuUzEQPePbJFLUWxqQ2LOq+CUQrLqDDf+CKAKxQP2jLuhHkE0TUKty7UHzsD33gheJY4/ncebMCTEzgwEmgNpGjgjEgHxsNiMe/5AZiQ2Alxcv8OP2Rh7BrfVclj/TOyrMbI7avW6IRjsLTs2EoA8sjtsAzMfg3t8Rg7QCX6UUDCdP9HHPdR44Op3v7UUpB5AnpqjUACmdqeNldqVYZrXAWqx8P9zfY7t93pNRhwANhDwdNKAGoDQqFNIDK6eA+bcH9N54iIh3RHY4OUcp2frmCHE5SjWnipG4txKPs8bJXaJTaQqIewrr1QYPj/uWvVbIBZTOrc0OExHG1uVS7swJMT5dfcP7dx8WTe4BYpcKH60+L4nozOBRErLwSBNs1FTIGkO8NmVEp2EgUKMT86HGcLpqD0rgDEGcRxbKo8jhznHrRqJx1mQu3d5snabyY73aYcqTwvT9+jPevH71L33CMHqzQMMW4EF/Xl6+xdcvH1tSNmhekLaaxj40DEzThNV654jFHgA53yGlZMxjIA0jhDl1aY0Voki5SkUp30i6GNueH2jIyNOvdrIUhSYVpkVzIZFqKn2zYKsjCuSSsRp2LbTi7nch/aBFy1OHTOgm72T8ZRCbIPrQVb2KsDSuVsrGJnc17frTwPmPIHas+7SbWZVndjVtIqwi3Tlspk5DRkqD7kUU42pOg32PMZuDKrPLChgDGQ1l7X/u8fTZLvxnuL0n7iOr5PgLf6hO8brzWoIAAAAASUVORK5CYII=";
+
 export const drawElement = (context, element, selectedElement) => {
   context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
 
@@ -56,6 +63,34 @@ export const drawElement = (context, element, selectedElement) => {
       context.stroke();
       break;
 
+    case ELEMENT_TYPES.GATEWAY:
+      context.beginPath();
+      context.strokeRect(element.point.x, element.point.y, 24, 24);
+      // TODO: use svg/png image instead of reactangle
+      // context.arc(element.point.x, element.point.y, 10, 0, Math.PI * 2, true);
+      // context.stroke();
+
+      // context.moveTo(element.point.x, element.point.y);
+      //   const path = new Path2D(
+      //     // "m1 9 2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8 3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4 2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"
+      // "M60 38.98C20.93 5.9 16.69 4 12 4S3.07 5.9 0 8.98L12 21 24 8.98zm-21.08.09C5.51 7.08 8.67 6 12 6s6.49 1.08 9.08 3.07l-1.43 1.43C17.5 8.94 14.86 8 12 8s-5.5.94-7.65 2.51L2.92 9.07z"
+      //     );
+      // context.stroke(path);
+
+      // context.drawImage(image, element.point.x, element.point.y, 12, 12);
+      // context.drawImage(imageUrl, 0, 0);
+
+      // const imageElement = new Image();
+
+      // // When the image has loaded, draw it to the canvas
+      // imageElement.onload = function (data) {
+      //   // draw image...
+      //   console.log(">>> data", data, context);
+      //   context.drawImage(data, element.point.x, element.point.y);
+      // };
+      // imageElement.src = imageUrl;
+      break;
+
     default:
       throw Error(`Type not recognised: ${element.type}`);
   }
@@ -80,6 +115,9 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
     case ELEMENT_TYPES.CIRCLE:
       const radius = getRadius(x1, y1, x2, y2);
       return { id, x: x1, y: y1, radius, type };
+
+    case ELEMENT_TYPES.GATEWAY:
+      return { id, type, point: { x: x1, y: y1 } };
 
     default:
       throw Error(`Type not recognised: ${type}`);
@@ -175,6 +213,16 @@ const PositionWithinElement = (x, y, element) => {
           ? CURSOR_POSITION.BOTTOM_LEFT
           : null;
       return resizeCircle || inside;
+
+    case ELEMENT_TYPES.GATEWAY:
+      const xEnd = element.point.x + 24;
+      const yEnd = element.point.y + 24;
+      const isInside =
+        x >= element.point.x && x <= xEnd && y >= element.point.y && y < yEnd
+          ? CURSOR_POSITION.INSIDE
+          : null;
+
+      return isInside;
 
     default:
       throw Error(`Type not recognised: ${element.type}`);
