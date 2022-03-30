@@ -163,26 +163,31 @@ const CanvasDrawing = (props) => {
     };
   }, []);
 
-  // add event listener on canvas for zoom
-  useEffect(() => {
-    const canvasElem = canvasRef.current;
-    if (canvasElem === null) {
-      return;
-    }
-
-    // this is tricky. Update the viewport's "origin" such that
-    // the mouse doesn't move during scale - the 'zoom point' of the mouse
-    // before and after zoom is relatively the same position on the viewport
-    function handleWheel(event) {
-      event.preventDefault();
-      if (context && (scale > 0.1 && scale < 30 )) {
-        const zoom = 1 - event.deltaY / ZOOM_SENSITIVITY;
-        const viewportTopLeftDelta = {
+  // this is tricky. Update the viewport's "origin" such that
+  // the mouse doesn't move during scale - the 'zoom point' of the mouse
+  // before and after zoom is relatively the same position on the viewport
+  const handleZoom = useCallback((event, zoomValue, mouseWheel = true) => {
+    event.preventDefault();
+    if (context) {
+      const zoom = 1 - zoomValue / ZOOM_SENSITIVITY;
+      let viewportTopLeftDelta
+      if(mouseWheel){
+        viewportTopLeftDelta = {
           x: (mousePos.x / scale) * (1 - 1 / zoom),
           y: (mousePos.y / scale) * (1 - 1 / zoom),
         };
-        const newViewportTopLeft = addPoints(viewportTopLeft, viewportTopLeftDelta);
+      } else {
+        viewportTopLeftDelta = {
+          x: ((props.canvasWidth / 2) / scale) * (1 - 1 / zoom),
+          y: ((props.canvasHeight / 2) / scale) * (1 - 1 / zoom),
+        };
+      }
+      
+      const newViewportTopLeft = addPoints(viewportTopLeft, viewportTopLeftDelta);
 
+      const newScale = scale * zoom
+
+      if (newScale > 0.1 && newScale < 30) {
         context.translate(viewportTopLeft.x, viewportTopLeft.y);
         context.scale(zoom, zoom);
         context.translate(-newViewportTopLeft.x, -newViewportTopLeft.y);
@@ -190,14 +195,24 @@ const CanvasDrawing = (props) => {
         setViewportTopLeft(newViewportTopLeft);
         setScale(scale * zoom);
         isResetRef.current = false;
-      } else {
-        setScale(prevState => prevState)
       }
+    } 
+  }, [context, mousePos.x, mousePos.y, viewportTopLeft, scale, props.canvasHeight, props.canvasWidth])
+
+  // add event listener on canvas for zoom
+  useEffect(() => {
+    const canvasElem = canvasRef.current;
+    if (canvasElem === null) {
+      return;
     }
 
+    const handleWheel = (event) => {
+      handleZoom(event, event.deltaY)
+    }
+      
     canvasElem.addEventListener("wheel", handleWheel);
     return () => canvasElem.removeEventListener("wheel", handleWheel);
-  }, [context, mousePos.x, mousePos.y, viewportTopLeft, scale]);
+  }, [handleZoom]);
 
   const updateElement = (id, x1, y1, x2, y2, type, options) => {
     const elementsCopy = [...elements];
@@ -465,7 +480,7 @@ const CanvasDrawing = (props) => {
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
       />
-      <ZoomToolbar context={context} reset={reset} scale={scale}/>
+      <ZoomToolbar context={context} reset={reset} scale={scale} handleZoom={handleZoom}/>
       <HistoryToolbar undo={undo} redo={redo} />
       <GridToolbar {...gridObj} onChange={setGridObj} />
     </>
