@@ -171,7 +171,7 @@ const CanvasDrawing = props => {
 			return;
 		}
 
-		function handleUpdateMouse(event) {
+		const handleUpdateMouse = event => {
 			event.preventDefault();
 			if (canvasRef.current) {
 				const viewportMousePos = { x: event.clientX, y: event.clientY };
@@ -181,7 +181,7 @@ const CanvasDrawing = props => {
 				};
 				setMousePos(diffPoints(viewportMousePos, topLeftCanvasPos));
 			}
-		}
+		};
 
 		canvasElem.addEventListener('mousemove', handleUpdateMouse);
 		canvasElem.addEventListener('wheel', handleUpdateMouse);
