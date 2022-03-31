@@ -1,6 +1,6 @@
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import HistoryToolbar from 'components/toolbar/historyToolbar';
 import useHistory from 'hooks/useHistory';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import {
 	adjustElementCoordinates,
@@ -86,7 +86,7 @@ const CanvasDrawing = () => {
 				elementsCopy[id].points = [...elementsCopy[id].points, { x: x2, y: y2 }];
 				break;
 
-			case ELEMENT_TYPES.TEXT:
+			case ELEMENT_TYPES.TEXT: {
 				const textWidth = canvasRef.current.getContext('2d').measureText(options.text).width;
 				const textHeight = 24;
 				elementsCopy[id] = {
@@ -94,7 +94,7 @@ const CanvasDrawing = () => {
 					text: options.text
 				};
 				break;
-
+			}
 			case ELEMENT_TYPES.CIRCLE:
 				elementsCopy[id] = createElement(id, x1, y1, x2, y2, type);
 				break;
@@ -318,7 +318,7 @@ const CanvasDrawing = () => {
 	return (
 		<>
 			<Toolbar selectedTool={tool} onChange={value => setTool(value)} />
-			{action === ACTIONS.WRITING ? (
+			{action === ACTIONS.WRITING && (
 				<textarea
 					ref={textAreaRef}
 					onBlur={handleTextBlur}
@@ -337,7 +337,8 @@ const CanvasDrawing = () => {
 						background: 'transparent'
 					}}
 				/>
-			) : null}
+			)}
+
 			<canvas
 				ref={canvasRef}
 				style={{ background: 'cyan' }}

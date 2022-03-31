@@ -1,3 +1,4 @@
+import React from 'react';
 import CanvasDrawing from 'components/canvasDrawing';
 
 const App = () => {

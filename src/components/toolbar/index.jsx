@@ -1,5 +1,6 @@
 import { ELEMENT_TYPES } from '../../constants';
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Toolbar = ({ selectedTool, onChange }) => {
 	return (
@@ -77,6 +78,11 @@ const Toolbar = ({ selectedTool, onChange }) => {
 			<label htmlFor="gateway">Gateway</label>
 		</div>
 	);
+};
+
+Toolbar.propTypes = {
+	selectedTool: PropTypes.string.isRequired,
+	onChange: PropTypes.func.isRequired
 };
 
 export default Toolbar;

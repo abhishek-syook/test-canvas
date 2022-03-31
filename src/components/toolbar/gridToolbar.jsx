@@ -1,3 +1,6 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
 const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 	return (
 		<div
@@ -33,6 +36,12 @@ const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 			</div>
 		</div>
 	);
+};
+
+GridToolbar.propTypes = {
+	isEnable: PropTypes.bool.isRequired,
+	snapSize: PropTypes.number.isRequired,
+	onChange: PropTypes.func.isRequired
 };
 
 export default GridToolbar;
