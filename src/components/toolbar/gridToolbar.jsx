@@ -1,5 +1,3 @@
-import React from 'react';
-
 const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 	return (
 		<div
