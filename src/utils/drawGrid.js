@@ -23,7 +23,7 @@ const drawGrid = ({ context, isEnable, snapSize }) => {
     context.lineTo(cw, y);
   }
 
-  context.strokeStyle = "black";
+  context.strokeStyle = 'black';
   context.stroke();
   context.closePath();
 };

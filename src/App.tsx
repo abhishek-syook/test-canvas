@@ -1,4 +1,4 @@
-import CanvasDrawing from "components/canvasDrawing";
+import CanvasDrawing from 'components/canvasDrawing';
 
 const App = () => {
   return <CanvasDrawing />;

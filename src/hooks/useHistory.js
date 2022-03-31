@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-const useHistory = (initalState) => {
+const useHistory = initalState => {
   const [index, setIndex] = useState(0);
   const [history, setHistory] = useState([initalState]);
 
   const setState = (action, overwrite = false) => {
-    const newState =
-      typeof action === "function" ? action(history[index]) : action;
+    const newState = typeof action === 'function' ? action(history[index]) : action;
 
     if (overwrite) {
       const historyCopy = [...history];
@@ -15,13 +14,12 @@ const useHistory = (initalState) => {
     } else {
       const updatedState = [...history].slice(0, index + 1);
       setHistory([...updatedState, newState]);
-      setIndex((prevState) => prevState + 1);
+      setIndex(prevState => prevState + 1);
     }
   };
 
-  const undo = () => index > 0 && setIndex((prevState) => prevState - 1);
-  const redo = () =>
-    index < history.length - 1 && setIndex((prevState) => prevState + 1);
+  const undo = () => index > 0 && setIndex(prevState => prevState - 1);
+  const redo = () => index < history.length - 1 && setIndex(prevState => prevState + 1);
 
   return [history[index], setState, undo, redo];
 };

@@ -1,6 +1,6 @@
-import HistoryToolbar from "components/toolbar/historyToolbar";
-import useHistory from "hooks/useHistory";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import HistoryToolbar from 'components/toolbar/historyToolbar';
+import useHistory from 'hooks/useHistory';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import {
   adjustElementCoordinates,
@@ -11,14 +11,14 @@ import {
   getElementAtPosition,
   getRadius,
   nearPoint,
-  resizedCoordinates,
-} from "utils/roughHelper";
-import { ACTIONS, CURSOR, CURSOR_POSITION, ELEMENT_TYPES, KEYBOARD_KEYS } from "../../constants";
+  resizedCoordinates
+} from 'utils/roughHelper';
+import { ACTIONS, CURSOR, CURSOR_POSITION, ELEMENT_TYPES, KEYBOARD_KEYS } from '../../constants';
 
-import Toolbar from "../toolbar";
-import cloneDeep from "utils/cloneDeep";
-import drawGrid from "utils/drawGrid";
-import GridToolbar from "components/toolbar/gridToolbar";
+import Toolbar from '../toolbar';
+import cloneDeep from 'utils/cloneDeep';
+import drawGrid from 'utils/drawGrid';
+import GridToolbar from 'components/toolbar/gridToolbar';
 
 const CanvasDrawing = () => {
   const canvasRef = useRef();
@@ -31,7 +31,7 @@ const CanvasDrawing = () => {
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     drawGrid({ context, ...gridObj });
@@ -58,9 +58,9 @@ const CanvasDrawing = () => {
         setSelectedElement(null);
       }
     };
-    document.addEventListener("keydown", undoRedoFunction);
+    document.addEventListener('keydown', undoRedoFunction);
     return () => {
-      document.removeEventListener("keydown", undoRedoFunction);
+      document.removeEventListener('keydown', undoRedoFunction);
     };
   }, [undo, redo]);
 
@@ -87,11 +87,11 @@ const CanvasDrawing = () => {
         break;
 
       case ELEMENT_TYPES.TEXT:
-        const textWidth = canvasRef.current.getContext("2d").measureText(options.text).width;
+        const textWidth = canvasRef.current.getContext('2d').measureText(options.text).width;
         const textHeight = 24;
         elementsCopy[id] = {
           ...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
-          text: options.text,
+          text: options.text
         };
         break;
 
@@ -192,7 +192,7 @@ const CanvasDrawing = () => {
         const elementsCopy = [...elements];
         elementsCopy[id] = {
           ...elementsCopy[id],
-          point: { x: clientX, y: clientY },
+          point: { x: clientX, y: clientY }
         };
         setElements(elementsCopy, true);
       } else {
@@ -208,26 +208,30 @@ const CanvasDrawing = () => {
       ) {
         const newPoints = selectedElement.points.map((_, index) => ({
           x: clientX - selectedElement.xOffsets[index],
-          y: clientY - selectedElement.yOffsets[index],
+          y: clientY - selectedElement.yOffsets[index]
         }));
 
         const elementsCopy = [...elements];
         elementsCopy[selectedElement.id] = {
           ...elementsCopy[selectedElement.id],
-          points: newPoints,
+          points: newPoints
         };
         setElements(elementsCopy, true);
       } else if ([ELEMENT_TYPES.CIRCLE].includes(selectedElement.type)) {
         const { id, offsetX, offsetY } = selectedElement;
         const elementsCopy = [...elements];
-        elementsCopy[id] = { ...elementsCopy[id], x: clientX - offsetX, y: clientY - offsetY };
+        elementsCopy[id] = {
+          ...elementsCopy[id],
+          x: clientX - offsetX,
+          y: clientY - offsetY
+        };
         setElements(elementsCopy, true);
       } else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
         const { id, offsetX, offsetY } = selectedElement;
         const elementsCopy = [...elements];
         elementsCopy[id] = {
           ...elementsCopy[id],
-          point: { x: clientX - offsetX, y: clientY - offsetY },
+          point: { x: clientX - offsetX, y: clientY - offsetY }
         };
         setElements(elementsCopy, true);
       } else {
@@ -243,10 +247,10 @@ const CanvasDrawing = () => {
     } else if (action === ACTIONS.RESIZING) {
       if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
         const hasPointOver = selectedElement.points.map((point, index) => {
-          return nearPoint(clientX, clientY, point.x, point.y, "start");
+          return nearPoint(clientX, clientY, point.x, point.y, 'start');
         });
 
-        const index = hasPointOver.indexOf("start");
+        const index = hasPointOver.indexOf('start');
         if (index > -1) {
           const selectedElementCopy = cloneDeep(selectedElement);
           const newPoints = selectedElementCopy.points;
@@ -254,7 +258,7 @@ const CanvasDrawing = () => {
           const elementsCopy = cloneDeep(elements);
           elementsCopy[selectedElement.id] = {
             ...elementsCopy[selectedElement.id],
-            points: newPoints,
+            points: newPoints
           };
           setSelectedElement(selectedElementCopy);
           setElements(elementsCopy, true);
@@ -311,7 +315,7 @@ const CanvasDrawing = () => {
     setAction(ACTIONS.NONE);
     setSelectedElement(null);
     updateElement(id, x1, y1, null, null, type, {
-      text: event.target.value,
+      text: event.target.value
     });
   };
 
@@ -325,22 +329,22 @@ const CanvasDrawing = () => {
           style={{
             top: selectedElement.y1 - 3,
             left: selectedElement.x1,
-            font: "24px sans-serif",
+            font: '24px sans-serif',
             margin: 0,
             border: 0,
             outline: 0,
             padding: 0,
-            resize: "auto",
-            position: "fixed",
-            overflow: "hidden",
-            whiteSpace: "pre",
-            background: "transparent",
+            resize: 'auto',
+            position: 'fixed',
+            overflow: 'hidden',
+            whiteSpace: 'pre',
+            background: 'transparent'
           }}
         />
       ) : null}
       <canvas
         ref={canvasRef}
-        style={{ background: "cyan" }}
+        style={{ background: 'cyan' }}
         width={window.innerWidth}
         height={window.innerHeight}
         onMouseDown={handleMouseDown}

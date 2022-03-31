@@ -1,8 +1,8 @@
-import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../constants";
+import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from '../constants';
 
-import wifiSvg from "../assets/wifi.svg";
-import wifiActiveSvg from "../assets/wifiActive.svg";
-import track from "../assets/track.svg";
+import wifiSvg from '../assets/wifi.svg';
+import wifiActiveSvg from '../assets/wifiActive.svg';
+import track from '../assets/track.svg';
 
 let wifiImage;
 const wifiImageElement = new Image();
@@ -23,7 +23,7 @@ wifiActiveImagelement.onload = function () {
 wifiActiveImagelement.src = wifiActiveSvg;
 
 export const drawElement = (context, element, selectedElement) => {
-  context.strokeStyle = element.id === selectedElement?.id ? "blue" : "black";
+  context.strokeStyle = element.id === selectedElement?.id ? 'blue' : 'black';
 
   switch (element.type) {
     case ELEMENT_TYPES.RECTANGLE:
@@ -47,9 +47,9 @@ export const drawElement = (context, element, selectedElement) => {
       break;
 
     case ELEMENT_TYPES.TEXT:
-      context.textBaseline = "top";
-      context.textAlign = "start";
-      context.font = "24px sans-serif";
+      context.textBaseline = 'top';
+      context.textAlign = 'start';
+      context.font = '24px sans-serif';
       context.fillText(element.text, element.x1, element.y1);
       break;
 
@@ -109,7 +109,7 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
       return { id, type, points: [{ x: x1, y: y1 }] };
 
     case ELEMENT_TYPES.TEXT:
-      return { id, type, x1, y1, x2, y2, text: "Hello" };
+      return { id, type, x1, y1, x2, y2, text: 'Hello' };
 
     case ELEMENT_TYPES.CIRCLE:
       const radius = getRadius(x1, y1, x2, y2);
@@ -233,7 +233,7 @@ const distance = (a, b) => Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y
 export const getElementAtPosition = (x, y, elements) => {
   const eles = elements.map(element => ({
     ...element,
-    position: PositionWithinElement(x, y, element),
+    position: PositionWithinElement(x, y, element)
   }));
   return eles.find(element => element.position !== null);
 };

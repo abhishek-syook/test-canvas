@@ -1,9 +1,9 @@
-import { ELEMENT_TYPES } from "../../constants";
-import React from "react";
+import { ELEMENT_TYPES } from '../../constants';
+import React from 'react';
 
 const Toolbar = ({ selectedTool, onChange }) => {
   return (
-    <div style={{ position: "fixed" }}>
+    <div style={{ position: 'fixed' }}>
       <input
         type="radio"
         id="selection"
