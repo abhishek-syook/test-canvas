@@ -1,7 +1,7 @@
 import CanvasDrawing from 'components/canvasDrawing';
 
 const App = () => {
-  return <CanvasDrawing />;
+	return <CanvasDrawing />;
 };
 
 export default App;
