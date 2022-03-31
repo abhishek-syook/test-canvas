@@ -2,7 +2,7 @@ import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from "../
 
 import wifiSvg from "../assets/wifi.svg";
 import wifiActiveSvg from "../assets/wifiActive.svg";
-import track from "../assets/track.svg";
+// import track from "../assets/track.svg";
 
 let wifiImage;
 const wifiImageElement = new Image();

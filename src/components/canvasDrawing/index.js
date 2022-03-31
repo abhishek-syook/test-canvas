@@ -38,6 +38,7 @@ const CanvasDrawing = (props) => {
   const [offset, setOffset] = useState(ORIGIN);
   const [mousePos, setMousePos] = useState(ORIGIN);
   const [viewportTopLeft, setViewportTopLeft] = useState(ORIGIN);
+  const [ visibleDimensions, setVisibleDimensions ] = useState({width: props.canvasWidth, height: props.canvasHeight})
   const isResetRef = useRef(false);
   const lastMousePosRef = useRef(ORIGIN);
   const lastOffsetRef = useRef(ORIGIN);
@@ -45,16 +46,16 @@ const CanvasDrawing = (props) => {
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(viewportTopLeft.x, viewportTopLeft.y, visibleDimensions.width, visibleDimensions.height);
 
-    drawGrid({ context, ...gridObj });
+    drawGrid({ context, viewportTopLeft, visibleDimensions,  ...gridObj });
     elements.forEach(element => {
       if (action === ACTIONS.WRITING && selectedElement.id === element.id) {
         return;
       }
       drawElement(context, element, selectedElement);
     });
-  }, [elements, action, selectedElement, gridObj, scale, viewportTopLeft]);
+  }, [elements, action, selectedElement, gridObj, scale, viewportTopLeft, visibleDimensions, visibleDimensions.height, visibleDimensions.width]);
 
   useEffect(() => {
     const undoRedoFunction = event => {
@@ -192,12 +193,16 @@ const CanvasDrawing = (props) => {
         context.scale(zoom, zoom);
         context.translate(-newViewportTopLeft.x, -newViewportTopLeft.y);
 
+        const newVisibleWidth = visibleDimensions.width / newScale
+        const newVisibleHeight = visibleDimensions.height / newScale
+
         setViewportTopLeft(newViewportTopLeft);
-        setScale(scale * zoom);
+        setScale(newScale);
+        setVisibleDimensions({width: newVisibleWidth, height: newVisibleHeight})
         isResetRef.current = false;
       }
     } 
-  }, [context, mousePos.x, mousePos.y, viewportTopLeft, scale, props.canvasHeight, props.canvasWidth])
+  }, [context, mousePos.x, mousePos.y, viewportTopLeft, scale, props.canvasHeight, props.canvasWidth, visibleDimensions.width, visibleDimensions.height])
 
   // add event listener on canvas for zoom
   useEffect(() => {
