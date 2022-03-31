@@ -73,17 +73,7 @@ const CanvasDrawing = props => {
 			}
 			drawElement(context, element, selectedElement);
 		});
-	}, [
-		elements,
-		action,
-		selectedElement,
-		gridObj,
-		scale,
-		viewportTopLeft,
-		visibleDimensions,
-		visibleDimensions.height,
-		visibleDimensions.width
-	]);
+	}, [elements, action, selectedElement, gridObj, scale, viewportTopLeft, visibleDimensions]);
 
 	useEffect(() => {
 		const undoRedoFunction = event => {
@@ -240,8 +230,7 @@ const CanvasDrawing = props => {
 			scale,
 			props.canvasHeight,
 			props.canvasWidth,
-			visibleDimensions.width,
-			visibleDimensions.height
+			visibleDimensions
 		]
 	);
 
