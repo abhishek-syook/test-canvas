@@ -23,6 +23,7 @@ import {
 	CURSOR,
 	CURSOR_POSITION,
 	ELEMENT_TYPES,
+	INITIAL_SCALE,
 	KEYBOARD_KEYS,
 	ORIGIN,
 	ZOOM_SENSITIVITY
@@ -43,7 +44,7 @@ const CanvasDrawing = props => {
 	const [selectedElement, setSelectedElement] = useState(null);
 	const [gridObj, setGridObj] = useState({ isEnable: false, snapSize: 10 });
 	const [context, setContext] = useState(null);
-	const [scale, setScale] = useState(1);
+	const [scale, setScale] = useState(INITIAL_SCALE);
 	const [offset, setOffset] = useState(ORIGIN);
 	const [mousePos, setMousePos] = useState(ORIGIN);
 	const [viewportTopLeft, setViewportTopLeft] = useState(ORIGIN);
@@ -124,8 +125,8 @@ const CanvasDrawing = props => {
 				// adjust for device pixel density
 				context.canvas.width = props.canvasWidth;
 				context.canvas.height = props.canvasHeight;
-				context.scale(1, 1);
-				setScale(1);
+				context.scale(INITIAL_SCALE, INITIAL_SCALE);
+				setScale(INITIAL_SCALE);
 
 				// reset state and refs
 				setContext(context);
