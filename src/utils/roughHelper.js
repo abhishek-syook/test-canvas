@@ -111,10 +111,10 @@ export const createElement = (id, x1, y1, x2, y2, type) => {
 		case ELEMENT_TYPES.TEXT:
 			return { id, type, x1, y1, x2, y2, text: 'Hello' };
 
-		case ELEMENT_TYPES.CIRCLE:
+		case ELEMENT_TYPES.CIRCLE: {
 			const radius = getRadius(x1, y1, x2, y2);
 			return { id, x: x1, y: y1, radius, type };
-
+		}
 		case ELEMENT_TYPES.GATEWAY:
 			return { id, type, point: { x: x1, y: y1 } };
 
@@ -143,29 +143,29 @@ const onLine = (x1, y1, x2, y2, x, y, maxDistance = 1) => {
 const PositionWithinElement = (x, y, element) => {
 	const { type, x1, y1, x2, y2 } = element;
 	switch (type) {
-		case ELEMENT_TYPES.LINE:
+		case ELEMENT_TYPES.LINE: {
 			const lineInside = onLine(x1, y1, x2, y2, x, y);
 			const start = nearPoint(x, y, x1, y1, CURSOR_POSITION.START);
 			const end = nearPoint(x, y, x2, y2, CURSOR_POSITION.END);
 			return start || end || lineInside;
-
-		case ELEMENT_TYPES.RECTANGLE:
+		}
+		case ELEMENT_TYPES.RECTANGLE: {
 			const topLeft = nearPoint(x, y, x1, y1, CURSOR_POSITION.TOP_LEFT);
 			const topRight = nearPoint(x, y, x2, y1, CURSOR_POSITION.TOP_RIGHT);
 			const bottomLeft = nearPoint(x, y, x1, y2, CURSOR_POSITION.BOTTOM_LEFT);
 			const bottomRight = nearPoint(x, y, x2, y2, CURSOR_POSITION.BOTTOM_RIGHT);
 			const rectInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? CURSOR_POSITION.INSIDE : null;
 			return topLeft || topRight || bottomLeft || bottomRight || rectInside;
-
-		case ELEMENT_TYPES.PENCIL:
+		}
+		case ELEMENT_TYPES.PENCIL: {
 			const betweenAnyPoint = element.points.some((point, index) => {
 				const nextPoint = element.points[index + 1];
 				if (!nextPoint) return false;
 				return onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y) !== null;
 			});
 			return betweenAnyPoint ? CURSOR_POSITION.INSIDE : null;
-
-		case ELEMENT_TYPES.POLYGON:
+		}
+		case ELEMENT_TYPES.POLYGON: {
 			const isInBetweenAnyPoint = element.points.some((point, index) => {
 				let nextIndex = index + 1;
 				nextIndex = element.points.length === nextIndex ? 0 : nextIndex;
@@ -183,8 +183,8 @@ const PositionWithinElement = (x, y, element) => {
 				: isInBetweenAnyPoint
 				? CURSOR_POSITION.INSIDE
 				: null;
-
-		case ELEMENT_TYPES.POLYLINE:
+		}
+		case ELEMENT_TYPES.POLYLINE: {
 			const isBetweenAnyPointPolyline = element.points.some((point, index) => {
 				const nextPoint = element.points[index + 1];
 				if (!nextPoint) return false;
@@ -198,12 +198,12 @@ const PositionWithinElement = (x, y, element) => {
 				: isBetweenAnyPointPolyline
 				? CURSOR_POSITION.INSIDE
 				: null;
-
-		case ELEMENT_TYPES.TEXT:
+		}
+		case ELEMENT_TYPES.TEXT: {
 			const textInside = x >= x1 && x < x2 && y >= y1 && y < y2 ? CURSOR_POSITION.INSIDE : null;
 			return textInside;
-
-		case ELEMENT_TYPES.CIRCLE:
+		}
+		case ELEMENT_TYPES.CIRCLE: {
 			const a = { x, y };
 			const b = { x: element.x, y: element.y };
 			const inside = distance(a, b) <= element.radius ? CURSOR_POSITION.INSIDE : null;
@@ -212,8 +212,9 @@ const PositionWithinElement = (x, y, element) => {
 					? CURSOR_POSITION.BOTTOM_LEFT
 					: null;
 			return resizeCircle || inside;
+		}
 
-		case ELEMENT_TYPES.GATEWAY:
+		case ELEMENT_TYPES.GATEWAY: {
 			const xEnd = element.point.x + 24;
 			const yEnd = element.point.y + 24;
 			const isInside =
@@ -222,7 +223,7 @@ const PositionWithinElement = (x, y, element) => {
 					: null;
 
 			return isInside;
-
+		}
 		default:
 			throw Error(`Type not recognised: ${element.type}`);
 	}
@@ -233,7 +234,7 @@ const distance = (a, b) => Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y
 export const getElementAtPosition = (x, y, elements) => {
 	const eles = elements.map(element => ({
 		...element,
-		position: PositionWithinElement(x, y, element),
+		position: PositionWithinElement(x, y, element)
 	}));
 	return eles.find(element => element.position !== null);
 };

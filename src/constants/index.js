@@ -12,7 +12,7 @@ export const ELEMENT_TYPES = Object.freeze({
 	ARC: 'arc',
 
 	// shapes
-	GATEWAY: 'gateway',
+	GATEWAY: 'gateway'
 });
 
 export const ACTIONS = Object.freeze({
@@ -20,20 +20,20 @@ export const ACTIONS = Object.freeze({
 	MOVING: 'moving',
 	RESIZING: 'resizing',
 	DRAWING: 'drawing',
-	WRITING: 'writing',
+	WRITING: 'writing'
 });
 
 export const CURSOR = Object.freeze({
 	DEFAULT: 'default',
 	MOVE: 'move',
 	NWSE_RESIZE: 'nwse-resize',
-	NESW_RESIZE: 'nesw-resize',
+	NESW_RESIZE: 'nesw-resize'
 });
 
 export const KEYBOARD_KEYS = Object.freeze({
 	ENTER: 'enter',
 	ESCAPE: 'escape',
-	Z: 'z',
+	Z: 'z'
 });
 
 export const CURSOR_POSITION = Object.freeze({
@@ -43,5 +43,5 @@ export const CURSOR_POSITION = Object.freeze({
 	TOP_LEFT: 'TOP_LEFT',
 	TOP_RIGHT: 'TOP_RIGHT',
 	BOTTOM_LEFT: 'BOTTOM_LEFT',
-	BOTTOM_RIGHT: 'BOTTOM_RIGHT',
+	BOTTOM_RIGHT: 'BOTTOM_RIGHT'
 });

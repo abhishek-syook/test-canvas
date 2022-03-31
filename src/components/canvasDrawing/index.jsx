@@ -11,7 +11,7 @@ import {
 	getElementAtPosition,
 	getRadius,
 	nearPoint,
-	resizedCoordinates,
+	resizedCoordinates
 } from 'utils/roughHelper';
 import { ACTIONS, CURSOR, CURSOR_POSITION, ELEMENT_TYPES, KEYBOARD_KEYS } from '../../constants';
 
@@ -91,7 +91,7 @@ const CanvasDrawing = () => {
 				const textHeight = 24;
 				elementsCopy[id] = {
 					...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
-					text: options.text,
+					text: options.text
 				};
 				break;
 
@@ -118,9 +118,7 @@ const CanvasDrawing = () => {
 			const element = getElementAtPosition(clientX, clientY, elements);
 			if (element) {
 				if (
-					[ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(
-						element.type
-					)
+					[ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(element.type)
 				) {
 					const xOffsets = element.points.map(point => clientX - point.x);
 					const yOffsets = element.points.map(point => clientY - point.y);
@@ -175,10 +173,7 @@ const CanvasDrawing = () => {
 				const index = elements.length - 1;
 				const { x1, y1 } = elements[index];
 				if (selectedElement.points.length > 1) {
-					selectedElement.points = selectedElement.points.splice(
-						0,
-						selectedElement.points.length - 1
-					);
+					selectedElement.points = selectedElement.points.splice(0, selectedElement.points.length - 1);
 				}
 				updateElement(index, x1, y1, clientX, clientY, tool);
 			} else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
@@ -192,7 +187,7 @@ const CanvasDrawing = () => {
 				const elementsCopy = [...elements];
 				elementsCopy[id] = {
 					...elementsCopy[id],
-					point: { x: clientX, y: clientY },
+					point: { x: clientX, y: clientY }
 				};
 				setElements(elementsCopy, true);
 			} else {
@@ -208,13 +203,13 @@ const CanvasDrawing = () => {
 			) {
 				const newPoints = selectedElement.points.map((_, index) => ({
 					x: clientX - selectedElement.xOffsets[index],
-					y: clientY - selectedElement.yOffsets[index],
+					y: clientY - selectedElement.yOffsets[index]
 				}));
 
 				const elementsCopy = [...elements];
 				elementsCopy[selectedElement.id] = {
 					...elementsCopy[selectedElement.id],
-					points: newPoints,
+					points: newPoints
 				};
 				setElements(elementsCopy, true);
 			} else if ([ELEMENT_TYPES.CIRCLE].includes(selectedElement.type)) {
@@ -223,7 +218,7 @@ const CanvasDrawing = () => {
 				elementsCopy[id] = {
 					...elementsCopy[id],
 					x: clientX - offsetX,
-					y: clientY - offsetY,
+					y: clientY - offsetY
 				};
 				setElements(elementsCopy, true);
 			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
@@ -231,7 +226,7 @@ const CanvasDrawing = () => {
 				const elementsCopy = [...elements];
 				elementsCopy[id] = {
 					...elementsCopy[id],
-					point: { x: clientX - offsetX, y: clientY - offsetY },
+					point: { x: clientX - offsetX, y: clientY - offsetY }
 				};
 				setElements(elementsCopy, true);
 			} else {
@@ -258,7 +253,7 @@ const CanvasDrawing = () => {
 					const elementsCopy = cloneDeep(elements);
 					elementsCopy[selectedElement.id] = {
 						...elementsCopy[selectedElement.id],
-						points: newPoints,
+						points: newPoints
 					};
 					setSelectedElement(selectedElementCopy);
 					setElements(elementsCopy, true);
@@ -302,8 +297,9 @@ const CanvasDrawing = () => {
 		if (
 			action === ACTIONS.DRAWING &&
 			[ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)
-		)
+		) {
 			return;
+		}
 
 		setAction(ACTIONS.NONE);
 		setSelectedElement(null);
@@ -315,7 +311,7 @@ const CanvasDrawing = () => {
 		setAction(ACTIONS.NONE);
 		setSelectedElement(null);
 		updateElement(id, x1, y1, null, null, type, {
-			text: event.target.value,
+			text: event.target.value
 		});
 	};
 
@@ -338,7 +334,7 @@ const CanvasDrawing = () => {
 						position: 'fixed',
 						overflow: 'hidden',
 						whiteSpace: 'pre',
-						background: 'transparent',
+						background: 'transparent'
 					}}
 				/>
 			) : null}

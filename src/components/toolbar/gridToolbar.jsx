@@ -8,7 +8,7 @@ const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 				bottom: 0,
 				padding: 10,
 				left: 100,
-				display: 'flex',
+				display: 'flex'
 			}}
 		>
 			<div>
