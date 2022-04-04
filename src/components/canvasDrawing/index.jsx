@@ -3,22 +3,20 @@ import PropTypes from 'prop-types';
 import HistoryToolbar from 'components/toolbar/historyToolbar';
 import useHistory from 'hooks/useHistory';
 
+import { adjustmentRequired, drawElement, drawZone } from 'utils/roughHelper';
 import {
 	adjustElementCoordinates,
-	adjustmentRequired,
 	createElement,
 	cursorForPosition,
-	drawElement,
 	getElementAtPosition,
-	getRadius,
 	nearPoint,
+	getRadius,
 	resizedCoordinates,
 	diffPoints,
 	addPoints,
 	scalePoint,
-	updatedPoints,
-	drawZone
-} from 'utils/roughHelper';
+	updatedPoints
+} from 'utils/mouseHelper';
 import {
 	ACTIONS,
 	CURSOR,
