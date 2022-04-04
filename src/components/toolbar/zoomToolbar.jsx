@@ -1,13 +1,28 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-const zoomToolbar = ({ context, reset, scale, handleZoom }) => {
+const ZoomToolbar = ({ onReset, currentScale, onZoomUpdate }) => {
 	return (
-		<div style={{ position: 'fixed', bottom: 40, padding: 10, display: 'flex' }}>
-			<button onClick={e => handleZoom(e, 53, false)}>-</button>
-			<button onClick={() => context && reset(context)}>{Math.round(scale * 10) * 10}%</button>
-			<button onClick={e => handleZoom(e, -53, false)}>+</button>
+		<div
+			style={{
+				left: 100,
+				bottom: 0,
+				padding: 10,
+				display: 'flex',
+				position: 'fixed'
+			}}
+		>
+			<button onClick={e => onZoomUpdate(e, 53, false)}>-</button>
+			<button onClick={onReset}>{currentScale}</button>
+			<button onClick={e => onZoomUpdate(e, -53, false)}>+</button>
 		</div>
 	);
 };
 
-export default zoomToolbar;
+ZoomToolbar.propTypes = {
+	currentScale: PropTypes.string.isRequired,
+	onReset: PropTypes.func.isRequired,
+	onZoomUpdate: PropTypes.func.isRequired
+};
+
+export default ZoomToolbar;
