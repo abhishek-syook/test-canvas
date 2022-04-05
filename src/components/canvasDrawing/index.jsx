@@ -1,26 +1,41 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import './index.scss';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import HistoryToolbar from 'components/toolbar/historyToolbar';
 import useHistory from 'hooks/useHistory';
 
+import { adjustmentRequired, drawElement, drawZone } from 'utils/roughHelper';
 import {
 	adjustElementCoordinates,
-	adjustmentRequired,
 	createElement,
 	cursorForPosition,
-	drawElement,
 	getElementAtPosition,
-	getRadius,
 	nearPoint,
-	resizedCoordinates
-} from 'utils/roughHelper';
-import { ACTIONS, CURSOR, CURSOR_POSITION, ELEMENT_TYPES, KEYBOARD_KEYS } from '../../constants';
+	getRadius,
+	resizedCoordinates,
+	diffPoints,
+	addPoints,
+	scalePoint,
+	updatedPoints
+} from 'utils/mouseHelper';
+import {
+	ACTIONS,
+	CURSOR,
+	CURSOR_POSITION,
+	ELEMENT_TYPES,
+	INITIAL_SCALE,
+	KEYBOARD_KEYS,
+	ORIGIN,
+	ZOOM_SENSITIVITY
+} from '../../constants';
 
 import Toolbar from '../toolbar';
 import cloneDeep from 'utils/cloneDeep';
 import drawGrid from 'utils/drawGrid';
 import GridToolbar from 'components/toolbar/gridToolbar';
+import ZoomToolbar from 'components/toolbar/zoomToolbar';
 
-const CanvasDrawing = () => {
+const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 	const canvasRef = useRef();
 	const textAreaRef = useRef();
 	const [elements, setElements, undo, redo] = useHistory([]);
@@ -28,20 +43,51 @@ const CanvasDrawing = () => {
 	const [tool, setTool] = useState(ELEMENT_TYPES.SELECTION);
 	const [selectedElement, setSelectedElement] = useState(null);
 	const [gridObj, setGridObj] = useState({ isEnable: false, snapSize: 10 });
+	const [context, setContext] = useState(null);
+	const [scale, setScale] = useState(INITIAL_SCALE);
+	const [offset, setOffset] = useState(ORIGIN);
+	const [mousePos, setMousePos] = useState(ORIGIN);
+	const [viewportTopLeft, setViewportTopLeft] = useState(ORIGIN);
+	const [visibleDimensions, setVisibleDimensions] = useState({
+		width: canvasWidth,
+		height: canvasHeight
+	});
+	const isResetRef = useRef(false);
+	const lastMousePosRef = useRef(ORIGIN);
+	const lastOffsetRef = useRef(ORIGIN);
 
 	useLayoutEffect(() => {
-		const canvas = canvasRef.current;
-		const context = canvas.getContext('2d');
-		context.clearRect(0, 0, canvas.width, canvas.height);
+		if (!context) return;
 
-		drawGrid({ context, ...gridObj });
+		// clear canvas but maintain transform
+		const storedTransform = context.getTransform();
+		context.canvas.width = +context.canvas.width;
+		context.canvas.height = +context.canvas.height;
+		context.setTransform(storedTransform);
+
+		context.clearRect(0, 0, visibleDimensions.width, visibleDimensions.height);
+
+		// draw Zone
+		zone && drawZone(context, zone);
+
+		drawGrid({ context, viewportTopLeft, visibleDimensions, ...gridObj });
 		elements.forEach(element => {
 			if (action === ACTIONS.WRITING && selectedElement.id === element.id) {
 				return;
 			}
 			drawElement(context, element, selectedElement);
 		});
-	}, [elements, action, selectedElement, gridObj]);
+	}, [
+		zone,
+		context,
+		elements,
+		action,
+		selectedElement,
+		gridObj,
+		scale,
+		viewportTopLeft,
+		visibleDimensions
+	]);
 
 	useEffect(() => {
 		const undoRedoFunction = event => {
@@ -70,6 +116,152 @@ const CanvasDrawing = () => {
 			textAreaRef.current.value = selectedElement.text;
 		}
 	}, [action, selectedElement]);
+
+	// update last offset
+	useEffect(() => {
+		lastOffsetRef.current = offset;
+	}, [offset]);
+
+	// reset
+	const reset = useCallback(
+		context => {
+			if (context && !isResetRef.current) {
+				// adjust for device pixel density
+				context.canvas.width = canvasWidth;
+				context.canvas.height = canvasHeight;
+				context.scale(INITIAL_SCALE, INITIAL_SCALE);
+				setScale(INITIAL_SCALE);
+
+				// reset state and refs
+				setContext(context);
+				setOffset(ORIGIN);
+				setMousePos(ORIGIN);
+				setViewportTopLeft(ORIGIN);
+				lastOffsetRef.current = ORIGIN;
+				lastMousePosRef.current = ORIGIN;
+
+				// this thing is so multiple resets in a row don't clear canvas
+				isResetRef.current = true;
+			}
+		},
+		[canvasWidth, canvasHeight]
+	);
+
+	// setup canvas and set context
+	useLayoutEffect(() => {
+		if (canvasRef.current) {
+			// get new drawing context
+			const renderCtx = canvasRef.current.getContext('2d');
+
+			if (renderCtx) {
+				reset(renderCtx);
+			}
+		}
+	}, [reset, canvasHeight, canvasWidth]);
+
+	// pan when offset or scale changes
+	useLayoutEffect(() => {
+		if (context && lastOffsetRef.current) {
+			const offsetDiff = scalePoint(diffPoints(offset, lastOffsetRef.current), scale);
+			context.translate(offsetDiff.x, offsetDiff.y);
+			setViewportTopLeft(prevVal => diffPoints(prevVal, offsetDiff));
+			isResetRef.current = false;
+		}
+	}, [context, offset, scale]);
+
+	// add event listener on canvas for mouse position
+	useEffect(() => {
+		const canvasElem = canvasRef.current;
+		if (canvasElem === null) {
+			return;
+		}
+
+		const handleUpdateMouse = event => {
+			event.preventDefault();
+			if (canvasRef.current) {
+				const viewportMousePos = { x: event.clientX, y: event.clientY };
+				const topLeftCanvasPos = {
+					x: canvasRef.current.offsetLeft,
+					y: canvasRef.current.offsetTop
+				};
+				setMousePos(diffPoints(viewportMousePos, topLeftCanvasPos));
+			}
+		};
+
+		canvasElem.addEventListener('mousemove', handleUpdateMouse);
+		canvasElem.addEventListener('wheel', handleUpdateMouse);
+		return () => {
+			canvasElem.removeEventListener('mousemove', handleUpdateMouse);
+			canvasElem.removeEventListener('wheel', handleUpdateMouse);
+		};
+	}, []);
+
+	// this is tricky. Update the viewport's "origin" such that
+	// the mouse doesn't move during scale - the 'zoom point' of the mouse
+	// before and after zoom is relatively the same position on the viewport
+	const handleZoom = useCallback(
+		(event, zoomValue, mouseWheel = true) => {
+			event.preventDefault();
+			if (context) {
+				const zoom = 1 - zoomValue / ZOOM_SENSITIVITY;
+				let viewportTopLeftDelta;
+				if (mouseWheel) {
+					viewportTopLeftDelta = {
+						x: (mousePos.x / scale) * (1 - 1 / zoom),
+						y: (mousePos.y / scale) * (1 - 1 / zoom)
+					};
+				} else {
+					viewportTopLeftDelta = {
+						x: (canvasWidth / 2 / scale) * (1 - 1 / zoom),
+						y: (canvasHeight / 2 / scale) * (1 - 1 / zoom)
+					};
+				}
+
+				const newViewportTopLeft = addPoints(viewportTopLeft, viewportTopLeftDelta);
+
+				const newScale = scale * zoom;
+
+				if (newScale > 0.1 && newScale < 30) {
+					context.translate(viewportTopLeft.x, viewportTopLeft.y);
+					context.scale(zoom, zoom);
+					context.translate(-newViewportTopLeft.x, -newViewportTopLeft.y);
+
+					const newVisibleWidth = visibleDimensions.width / newScale;
+					const newVisibleHeight = visibleDimensions.height / newScale;
+
+					setViewportTopLeft(newViewportTopLeft);
+					setScale(newScale);
+					setVisibleDimensions({ width: newVisibleWidth, height: newVisibleHeight });
+					isResetRef.current = false;
+				}
+			}
+		},
+		[
+			context,
+			mousePos.x,
+			mousePos.y,
+			viewportTopLeft,
+			scale,
+			canvasHeight,
+			canvasWidth,
+			visibleDimensions
+		]
+	);
+
+	// add event listener on canvas for zoom
+	useEffect(() => {
+		const canvasElem = canvasRef.current;
+		if (canvasElem === null) {
+			return;
+		}
+
+		const handleWheel = event => {
+			handleZoom(event, event.deltaY);
+		};
+
+		canvasElem.addEventListener('wheel', handleWheel);
+		return () => canvasElem.removeEventListener('wheel', handleWheel);
+	}, [handleZoom]);
 
 	const updateElement = (id, x1, y1, x2, y2, type, options) => {
 		const elementsCopy = [...elements];
@@ -114,26 +306,27 @@ const CanvasDrawing = () => {
 		if (action === ACTIONS.WRITING) return;
 
 		const { clientX, clientY } = event;
+		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft);
 		if (tool === ELEMENT_TYPES.SELECTION) {
-			const element = getElementAtPosition(clientX, clientY, elements);
+			const element = getElementAtPosition(updatedX, updatedY, elements);
 			if (element) {
 				if (
 					[ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(element.type)
 				) {
-					const xOffsets = element.points.map(point => clientX - point.x);
-					const yOffsets = element.points.map(point => clientY - point.y);
+					const xOffsets = element.points.map(point => updatedX - point.x);
+					const yOffsets = element.points.map(point => updatedY - point.y);
 					setSelectedElement({ ...element, xOffsets, yOffsets });
 				} else if (ELEMENT_TYPES.CIRCLE === element.type) {
-					const offsetX = clientX - element.x;
-					const offsetY = clientY - element.y;
+					const offsetX = updatedX - element.x;
+					const offsetY = updatedY - element.y;
 					setSelectedElement({ ...element, offsetX, offsetY });
 				} else if (ELEMENT_TYPES.GATEWAY === element.type) {
-					const offsetX = clientX - element.point.x;
-					const offsetY = clientY - element.point.y;
+					const offsetX = updatedX - element.point.x;
+					const offsetY = updatedY - element.point.y;
 					setSelectedElement({ ...element, offsetX, offsetY });
 				} else {
-					const offsetX = clientX - element.x1;
-					const offsetY = clientY - element.y1;
+					const offsetX = updatedX - element.x1;
+					const offsetY = updatedY - element.y1;
 					setSelectedElement({ ...element, offsetX, offsetY });
 				}
 				setElements(prevState => prevState);
@@ -143,15 +336,18 @@ const CanvasDrawing = () => {
 				} else {
 					setAction(ACTIONS.RESIZING);
 				}
+			} else {
+				setAction(ACTIONS.PANNING);
+				lastMousePosRef.current = { x: event.pageX, y: event.pageY };
 			}
 		} else {
 			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type)) {
 				const index = elements.length - 1;
 				const { x1, y1 } = elements[index];
-				updateElement(index, x1, y1, clientX, clientY, tool);
+				updateElement(index, x1, y1, updatedX, updatedY, tool);
 			} else {
 				const id = elements.length;
-				const element = createElement(id, clientX, clientY, clientX, clientY, tool);
+				const element = createElement(id, updatedX, updatedY, updatedX, updatedY, tool);
 				setElements(p => [...p, element]);
 				setSelectedElement(element);
 
@@ -162,9 +358,9 @@ const CanvasDrawing = () => {
 
 	const handleMouseMove = event => {
 		const { clientX, clientY } = event;
-
+		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft);
 		if (tool === ELEMENT_TYPES.SELECTION) {
-			const element = getElementAtPosition(clientX, clientY, elements);
+			const element = getElementAtPosition(updatedX, updatedY, elements);
 			event.target.style.cursor = element ? cursorForPosition(element.position) : CURSOR.DEFAULT;
 		}
 
@@ -175,11 +371,11 @@ const CanvasDrawing = () => {
 				if (selectedElement.points.length > 1) {
 					selectedElement.points = selectedElement.points.splice(0, selectedElement.points.length - 1);
 				}
-				updateElement(index, x1, y1, clientX, clientY, tool);
+				updateElement(index, x1, y1, updatedX, updatedY, tool);
 			} else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
 				const { id, x, y } = selectedElement;
 				const elementsCopy = [...elements];
-				const radius = getRadius(x, y, clientX, clientY);
+				const radius = getRadius(x, y, updatedX, updatedY);
 				elementsCopy[id] = { ...elementsCopy[id], radius: radius };
 				setElements(elementsCopy, true);
 			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
@@ -187,13 +383,22 @@ const CanvasDrawing = () => {
 				const elementsCopy = [...elements];
 				elementsCopy[id] = {
 					...elementsCopy[id],
-					point: { x: clientX, y: clientY }
+					point: { x: updatedX, y: updatedY }
 				};
 				setElements(elementsCopy, true);
 			} else {
 				const index = elements.length - 1;
 				const { x1, y1 } = elements[index];
-				updateElement(index, x1, y1, clientX, clientY, tool);
+				updateElement(index, x1, y1, updatedX, updatedY, tool);
+			}
+		} else if (action === ACTIONS.PANNING) {
+			if (context) {
+				const lastMousePos = lastMousePosRef.current;
+				const currentMousePos = { x: event.pageX, y: event.pageY }; // use document so can pan off element
+				lastMousePosRef.current = currentMousePos;
+
+				const mouseDiff = diffPoints(currentMousePos, lastMousePos);
+				setOffset(prevOffset => addPoints(prevOffset, mouseDiff));
 			}
 		} else if (action === ACTIONS.MOVING) {
 			if (
@@ -202,8 +407,8 @@ const CanvasDrawing = () => {
 				)
 			) {
 				const newPoints = selectedElement.points.map((_, index) => ({
-					x: clientX - selectedElement.xOffsets[index],
-					y: clientY - selectedElement.yOffsets[index]
+					x: updatedX - selectedElement.xOffsets[index],
+					y: updatedY - selectedElement.yOffsets[index]
 				}));
 
 				const elementsCopy = [...elements];
@@ -215,26 +420,22 @@ const CanvasDrawing = () => {
 			} else if ([ELEMENT_TYPES.CIRCLE].includes(selectedElement.type)) {
 				const { id, offsetX, offsetY } = selectedElement;
 				const elementsCopy = [...elements];
-				elementsCopy[id] = {
-					...elementsCopy[id],
-					x: clientX - offsetX,
-					y: clientY - offsetY
-				};
+				elementsCopy[id] = { ...elementsCopy[id], x: updatedX - offsetX, y: updatedY - offsetY };
 				setElements(elementsCopy, true);
 			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
 				const { id, offsetX, offsetY } = selectedElement;
 				const elementsCopy = [...elements];
 				elementsCopy[id] = {
 					...elementsCopy[id],
-					point: { x: clientX - offsetX, y: clientY - offsetY }
+					point: { x: updatedX - offsetX, y: updatedY - offsetY }
 				};
 				setElements(elementsCopy, true);
 			} else {
 				const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement;
 				const width = x2 - x1;
 				const height = y2 - y1;
-				const newX = clientX - offsetX;
-				const newY = clientY - offsetY;
+				const newX = updatedX - offsetX;
+				const newY = updatedY - offsetY;
 				const options = type === ELEMENT_TYPES.TEXT ? { text: selectedElement.text } : {};
 
 				updateElement(id, newX, newY, newX + width, newY + height, type, options);
@@ -242,14 +443,14 @@ const CanvasDrawing = () => {
 		} else if (action === ACTIONS.RESIZING) {
 			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
 				const hasPointOver = selectedElement.points.map((point, index) => {
-					return nearPoint(clientX, clientY, point.x, point.y, 'start');
+					return nearPoint(updatedX, updatedY, point.x, point.y, 'start');
 				});
 
 				const index = hasPointOver.indexOf('start');
 				if (index > -1) {
 					const selectedElementCopy = cloneDeep(selectedElement);
 					const newPoints = selectedElementCopy.points;
-					newPoints[index] = { x: clientX, y: clientY };
+					newPoints[index] = { x: updatedX, y: updatedY };
 					const elementsCopy = cloneDeep(elements);
 					elementsCopy[selectedElement.id] = {
 						...elementsCopy[selectedElement.id],
@@ -261,12 +462,12 @@ const CanvasDrawing = () => {
 			} else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
 				const { id, x, y } = selectedElement;
 				const elementsCopy = [...elements];
-				const radius = getRadius(x, y, clientX, clientY);
+				const radius = getRadius(x, y, updatedX, updatedY);
 				elementsCopy[id] = { ...elementsCopy[id], radius: radius };
 				setElements(elementsCopy, true);
 			} else {
 				const { id, type, position, ...coordinates } = selectedElement;
-				const { x1, y1, x2, y2 } = resizedCoordinates(clientX, clientY, position, coordinates);
+				const { x1, y1, x2, y2 } = resizedCoordinates(updatedX, updatedY, position, coordinates);
 				updateElement(id, x1, y1, x2, y2, type);
 			}
 		}
@@ -274,11 +475,12 @@ const CanvasDrawing = () => {
 
 	const handleMouseUp = event => {
 		const { clientX, clientY } = event;
+		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft);
 		if (selectedElement) {
 			if (
 				selectedElement.type === ELEMENT_TYPES.TEXT &&
-				clientX - selectedElement.offsetX === selectedElement.x1 &&
-				clientY - selectedElement.offsetY === selectedElement.y1
+				updatedX - selectedElement.offsetX === selectedElement.x1 &&
+				updatedY - selectedElement.offsetY === selectedElement.y1
 			) {
 				setAction(ACTIONS.WRITING);
 				return;
@@ -300,7 +502,6 @@ const CanvasDrawing = () => {
 		) {
 			return;
 		}
-
 		setAction(ACTIONS.NONE);
 		setSelectedElement(null);
 	};
@@ -316,7 +517,7 @@ const CanvasDrawing = () => {
 	};
 
 	return (
-		<>
+		<div className="canvasDrawing">
 			<Toolbar selectedTool={tool} onChange={value => setTool(value)} />
 			{action === ACTIONS.WRITING && (
 				<textarea
@@ -341,17 +542,36 @@ const CanvasDrawing = () => {
 
 			<canvas
 				ref={canvasRef}
-				style={{ background: 'cyan' }}
-				width={window.innerWidth}
-				height={window.innerHeight}
+				style={{ background: 'var(--color-secondary)' }}
+				width={canvasWidth}
+				height={canvasHeight}
 				onMouseDown={handleMouseDown}
 				onMouseUp={handleMouseUp}
 				onMouseMove={handleMouseMove}
 			/>
+			<ZoomToolbar
+				currentScale={`${Math.round(scale * 10) * 10}%`}
+				onReset={() => reset(context)}
+				onZoomUpdate={handleZoom}
+			/>
 			<HistoryToolbar undo={undo} redo={redo} />
 			<GridToolbar {...gridObj} onChange={setGridObj} />
-		</>
+		</div>
 	);
+};
+
+CanvasDrawing.propTypes = {
+	canvasWidth: PropTypes.number.isRequired,
+	canvasHeight: PropTypes.number.isRequired,
+	zone: PropTypes.object
+};
+
+CanvasDrawing.defaultProps = {
+	zone: {
+		width: 300,
+		height: 200,
+		name: 'Small Factory'
+	}
 };
 
 export default CanvasDrawing;
