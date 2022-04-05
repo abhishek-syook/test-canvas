@@ -1,9 +1,10 @@
+import './index.scss';
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import HistoryToolbar from 'components/toolbar/historyToolbar';
 import useHistory from 'hooks/useHistory';
 
-import { adjustmentRequired, drawElement } from 'utils/roughHelper';
+import { adjustmentRequired, drawElement, drawZone } from 'utils/roughHelper';
 import {
 	adjustElementCoordinates,
 	createElement,
@@ -34,7 +35,7 @@ import drawGrid from 'utils/drawGrid';
 import GridToolbar from 'components/toolbar/gridToolbar';
 import ZoomToolbar from 'components/toolbar/zoomToolbar';
 
-const CanvasDrawing = props => {
+const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 	const canvasRef = useRef();
 	const textAreaRef = useRef();
 	const [elements, setElements, undo, redo] = useHistory([]);
@@ -48,22 +49,26 @@ const CanvasDrawing = props => {
 	const [mousePos, setMousePos] = useState(ORIGIN);
 	const [viewportTopLeft, setViewportTopLeft] = useState(ORIGIN);
 	const [visibleDimensions, setVisibleDimensions] = useState({
-		width: props.canvasWidth,
-		height: props.canvasHeight
+		width: canvasWidth,
+		height: canvasHeight
 	});
 	const isResetRef = useRef(false);
 	const lastMousePosRef = useRef(ORIGIN);
 	const lastOffsetRef = useRef(ORIGIN);
 
 	useLayoutEffect(() => {
-		const canvas = canvasRef.current;
-		const context = canvas.getContext('2d');
-		context.clearRect(
-			viewportTopLeft.x,
-			viewportTopLeft.y,
-			visibleDimensions.width,
-			visibleDimensions.height
-		);
+		if (!context) return;
+
+		// clear canvas but maintain transform
+		const storedTransform = context.getTransform();
+		context.canvas.width = +context.canvas.width;
+		context.canvas.height = +context.canvas.height;
+		context.setTransform(storedTransform);
+
+		context.clearRect(0, 0, visibleDimensions.width, visibleDimensions.height);
+
+		// draw Zone
+		zone && drawZone(context, zone);
 
 		drawGrid({ context, viewportTopLeft, visibleDimensions, ...gridObj });
 		elements.forEach(element => {
@@ -72,7 +77,17 @@ const CanvasDrawing = props => {
 			}
 			drawElement(context, element, selectedElement);
 		});
-	}, [elements, action, selectedElement, gridObj, scale, viewportTopLeft, visibleDimensions]);
+	}, [
+		zone,
+		context,
+		elements,
+		action,
+		selectedElement,
+		gridObj,
+		scale,
+		viewportTopLeft,
+		visibleDimensions
+	]);
 
 	useEffect(() => {
 		const undoRedoFunction = event => {
@@ -112,8 +127,8 @@ const CanvasDrawing = props => {
 		context => {
 			if (context && !isResetRef.current) {
 				// adjust for device pixel density
-				context.canvas.width = props.canvasWidth;
-				context.canvas.height = props.canvasHeight;
+				context.canvas.width = canvasWidth;
+				context.canvas.height = canvasHeight;
 				context.scale(INITIAL_SCALE, INITIAL_SCALE);
 				setScale(INITIAL_SCALE);
 
@@ -129,7 +144,7 @@ const CanvasDrawing = props => {
 				isResetRef.current = true;
 			}
 		},
-		[props.canvasWidth, props.canvasHeight]
+		[canvasWidth, canvasHeight]
 	);
 
 	// setup canvas and set context
@@ -142,7 +157,7 @@ const CanvasDrawing = props => {
 				reset(renderCtx);
 			}
 		}
-	}, [reset, props.canvasHeight, props.canvasWidth]);
+	}, [reset, canvasHeight, canvasWidth]);
 
 	// pan when offset or scale changes
 	useLayoutEffect(() => {
@@ -197,8 +212,8 @@ const CanvasDrawing = props => {
 					};
 				} else {
 					viewportTopLeftDelta = {
-						x: (props.canvasWidth / 2 / scale) * (1 - 1 / zoom),
-						y: (props.canvasHeight / 2 / scale) * (1 - 1 / zoom)
+						x: (canvasWidth / 2 / scale) * (1 - 1 / zoom),
+						y: (canvasHeight / 2 / scale) * (1 - 1 / zoom)
 					};
 				}
 
@@ -227,8 +242,8 @@ const CanvasDrawing = props => {
 			mousePos.y,
 			viewportTopLeft,
 			scale,
-			props.canvasHeight,
-			props.canvasWidth,
+			canvasHeight,
+			canvasWidth,
 			visibleDimensions
 		]
 	);
@@ -502,7 +517,7 @@ const CanvasDrawing = props => {
 	};
 
 	return (
-		<>
+		<div className="canvasDrawing">
 			<Toolbar selectedTool={tool} onChange={value => setTool(value)} />
 			{action === ACTIONS.WRITING && (
 				<textarea
@@ -527,23 +542,36 @@ const CanvasDrawing = props => {
 
 			<canvas
 				ref={canvasRef}
-				style={{ background: 'cyan' }}
-				width={props.canvasWidth}
-				height={props.canvasHeight}
+				style={{ background: 'var(--color-secondary)' }}
+				width={canvasWidth}
+				height={canvasHeight}
 				onMouseDown={handleMouseDown}
 				onMouseUp={handleMouseUp}
 				onMouseMove={handleMouseMove}
 			/>
-			<ZoomToolbar context={context} reset={reset} scale={scale} handleZoom={handleZoom} />
+			<ZoomToolbar
+				currentScale={`${Math.round(scale * 10) * 10}%`}
+				onReset={() => reset(context)}
+				onZoomUpdate={handleZoom}
+			/>
 			<HistoryToolbar undo={undo} redo={redo} />
 			<GridToolbar {...gridObj} onChange={setGridObj} />
-		</>
+		</div>
 	);
 };
 
 CanvasDrawing.propTypes = {
 	canvasWidth: PropTypes.number.isRequired,
-	canvasHeight: PropTypes.number.isRequired
+	canvasHeight: PropTypes.number.isRequired,
+	zone: PropTypes.object
+};
+
+CanvasDrawing.defaultProps = {
+	zone: {
+		width: 300,
+		height: 200,
+		name: 'Small Factory'
+	}
 };
 
 export default CanvasDrawing;
