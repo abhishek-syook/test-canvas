@@ -1,19 +1,72 @@
+import React from 'react';
+import SelectIcon from 'assets/toolIcons/select';
+import LineIcon from 'assets/toolIcons/line';
+import RectangleIcon from 'assets/toolIcons/rectangle';
+import PencilIcon from 'assets/toolIcons/pencil';
+import TextIcon from 'assets/toolIcons/text';
+import PolylineIcon from 'assets/toolIcons/polyline';
+import PolygonIcon from 'assets/toolIcons/polygon';
+import CircleIcon from 'assets/toolIcons/circle';
+
 export const NEAR_POINT_DISTANCE = 5;
 
 export const ELEMENT_TYPES = Object.freeze({
+	SELECTION: 'selection',
 	LINE: 'line',
 	RECTANGLE: 'rectangle',
-	SELECTION: 'selection',
 	PENCIL: 'pencil',
 	TEXT: 'text',
 	POLYGON: 'polygon',
 	POLYLINE: 'polyline',
 	CIRCLE: 'circle',
-	ARC: 'arc',
+	// ARC: 'arc',
 
 	// shapes
 	GATEWAY: 'gateway'
 });
+
+export const ELEMENT_TYPES_DATA = [
+	{
+		type: ELEMENT_TYPES.SELECTION,
+		label: 'Selection',
+		icon: <SelectIcon />
+	},
+	{
+		type: ELEMENT_TYPES.LINE,
+		label: 'Line',
+		icon: <LineIcon />
+	},
+	{
+		type: ELEMENT_TYPES.RECTANGLE,
+		label: 'Rectangle',
+		icon: <RectangleIcon />
+	},
+	{
+		type: ELEMENT_TYPES.PENCIL,
+		label: 'Pencil',
+		icon: <PencilIcon />
+	},
+	{
+		type: ELEMENT_TYPES.TEXT,
+		label: 'Text box',
+		icon: <TextIcon />
+	},
+	{
+		type: ELEMENT_TYPES.POLYLINE,
+		label: 'Polyline',
+		icon: <PolylineIcon />
+	},
+	{
+		type: ELEMENT_TYPES.POLYGON,
+		label: 'Polygon',
+		icon: <PolygonIcon />
+	},
+	{
+		type: ELEMENT_TYPES.CIRCLE,
+		label: 'Circle',
+		icon: <CircleIcon />
+	}
+];
 
 export const ACTIONS = Object.freeze({
 	NONE: 'none',
