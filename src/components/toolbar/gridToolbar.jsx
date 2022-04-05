@@ -5,11 +5,11 @@ const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 	return (
 		<div
 			style={{
-				position: 'fixed',
+				left: 200,
 				bottom: 0,
 				padding: 10,
-				left: 100,
-				display: 'flex'
+				display: 'flex',
+				position: 'fixed'
 			}}
 		>
 			<div>

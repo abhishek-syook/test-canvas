@@ -22,6 +22,77 @@ wifiActiveImagelement.onload = function () {
 
 wifiActiveImagelement.src = wifiActiveSvg;
 
+export const drawZone = (context, zone) => {
+	const name = `${zone.name} (${zone.width}m * ${zone.height}m)`;
+	context.strokeStyle = 'grey';
+	context.fillStyle = 'grey';
+	context.textAlign = 'start';
+	context.font = '14px sans-serif';
+	// context.textBaseline = 'top';
+
+	/**
+	 * draw main rectangle for zone and zone name
+	 */
+	context.strokeRect(0, 0, zone.width, zone.height);
+	const xPos = (zone.width - context.measureText(name).width) / 2;
+	context.fillText(name, xPos, -20);
+
+	// draw outline
+	// x axis
+	const xText = `${zone.width} m`;
+	const yText = `${zone.height} m`;
+
+	const textWidth = context.measureText(xText).width;
+	const afterTextWidth = zone.width - textWidth;
+
+	const bottomMargin = -8;
+
+	// draw line and keep text space
+	context.beginPath();
+	context.moveTo(0, bottomMargin);
+	context.lineTo(afterTextWidth / 2 - 5, bottomMargin);
+	context.moveTo(afterTextWidth / 2 + textWidth + 5, bottomMargin);
+	context.lineTo(afterTextWidth / 2 + textWidth + 5, bottomMargin);
+	context.lineTo(zone.width, bottomMargin);
+	context.stroke();
+
+	// draw text between lines
+	context.fillText(xText, afterTextWidth / 2, -4);
+
+	// y axis
+	const rightMargin = -8;
+
+	const rotateAngle = (1 * Math.PI) / 2;
+	const afterTextHeight = zone.height - textWidth;
+
+	// draw line and keep text space
+	context.moveTo(rightMargin, 0);
+	context.lineTo(rightMargin, afterTextHeight / 2 - 5);
+	context.moveTo(rightMargin, afterTextHeight / 2 + textWidth + 5);
+	context.lineTo(rightMargin, afterTextHeight / 2 + textWidth + 5);
+	context.lineTo(rightMargin, zone.height);
+	context.stroke();
+
+	/**
+	 * draw text between lines
+	 * to draw in between vertical rotate text,
+	 * transform and rotate the canvas, print text and reverse transform and rotate
+	 * Ref - https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/rotate#rotating_a_shape_around_its_center
+	 */
+	const xTranslate = rightMargin + textWidth / 2;
+	const yTranslate = afterTextHeight / 2 + textWidth / 2;
+
+	context.translate(xTranslate, yTranslate);
+	context.rotate(-rotateAngle);
+	context.translate(-xTranslate, -yTranslate);
+
+	context.fillText(yText, rightMargin, afterTextHeight / 2 + 4);
+
+	context.translate(xTranslate, yTranslate);
+	context.rotate(rotateAngle);
+	context.translate(-xTranslate, -yTranslate);
+};
+
 export const drawElement = (context, element, selectedElement) => {
 	context.strokeStyle = element.id === selectedElement?.id ? 'blue' : 'black';
 
