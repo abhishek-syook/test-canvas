@@ -1,3 +1,4 @@
+import './index.scss';
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import HistoryToolbar from 'components/toolbar/historyToolbar';
@@ -516,7 +517,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 	};
 
 	return (
-		<>
+		<div className="canvasDrawing">
 			<Toolbar selectedTool={tool} onChange={value => setTool(value)} />
 			{action === ACTIONS.WRITING && (
 				<textarea
@@ -541,7 +542,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 			<canvas
 				ref={canvasRef}
-				style={{ background: 'cyan' }}
+				style={{ background: 'var(--color-secondary)' }}
 				width={canvasWidth}
 				height={canvasHeight}
 				onMouseDown={handleMouseDown}
@@ -555,7 +556,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			/>
 			<HistoryToolbar undo={undo} redo={redo} />
 			<GridToolbar {...gridObj} onChange={setGridObj} />
-		</>
+		</div>
 	);
 };
 
