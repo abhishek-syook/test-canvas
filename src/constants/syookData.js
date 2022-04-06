@@ -458,7 +458,7 @@ export const gateways = [
 		__v: 0
 	},
 	{
-		_id: '624c2a53d5b277003e9bf4c2',
+		_id: '624c2a53d5b277003e9bf4c3',
 		name: 'SM_G2',
 		hardwareType: 'BLE',
 		identifierKey: 'macId',

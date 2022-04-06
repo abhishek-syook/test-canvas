@@ -553,20 +553,13 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 				<canvas
 					ref={canvasRef}
-					style={{ background: 'var(--color-secondary)' }}
+					style={{ backgroundColor: 'var(--grey-3)' }}
 					width={canvasWidth}
 					height={canvasHeight}
 					onMouseDown={handleMouseDown}
 					onMouseUp={handleMouseUp}
 					onMouseMove={handleMouseMove}
 				/>
-				{/* <ZoomToolbar
-					currentScale={`${Math.round(scale * 10) * 10}%`}
-					onReset={() => reset(context)}
-					onZoomUpdate={handleZoom}
-				/>
-				<HistoryToolbar undo={undo} redo={redo} />
-				<GridToolbar {...gridObj} onChange={setGridObj} /> */}
 			</Layout>
 		</div>
 	);

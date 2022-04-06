@@ -13,8 +13,11 @@ code {
 
 :root {
 	--color-primary: #fff;
-	--color-secondary: cyan;
+	--color-secondary: #00ffff;
 	--grey-1: grey;
+	--grey-2: #eff1f5;
+	--grey-3: #cacaca;
+	--white: #fff;
 }
 
 .canvasDrawingScrollBar::-webkit-scrollbar {

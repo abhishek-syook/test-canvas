@@ -1,8 +1,8 @@
 import './index.scss';
 import React from 'react';
-import GridToolbar from 'components/toolbar/gridToolbar';
-import HistoryToolbar from 'components/toolbar/historyToolbar';
-import ZoomToolbar from 'components/toolbar/zoomToolbar';
+import GridToolbar from './components/gridToolbar';
+import HistoryToolbar from './components/historyToolbar';
+import ZoomToolbar from './components/zoomToolbar';
 
 interface BottomPanelProps {
 	currentScale: string;

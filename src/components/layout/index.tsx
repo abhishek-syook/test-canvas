@@ -1,37 +1,53 @@
 import './index.scss';
-import React, { FC } from 'react';
+
+import React from 'react';
+
 import LeftPanel from './leftPanel';
 import TopPanel from './topPanel';
 import RightPanel from './rightPanel';
 import BottomPanel from './bottomPanel';
 
-interface Props {
+interface LayoutProps {
 	children: Node;
+
+	// leftPanel
 	tool: string;
 	setTool: (elementType: string) => string;
 
-	// bottom panel
+	// bottomPanel - zoom tool
 	currentScale: string;
 	onZoomReset: () => void;
 	onZoomUpdate: () => void;
+	// bottomPanel - history tools
+
 	undo: () => void;
 	redo: () => void;
+	// bottomPanel - grid tool
+
 	gridObj: { isEnable: boolean; snapSize: number };
 	onGridChange: () => void;
 }
 
-const Layout: FC<Props> = ({
+const Layout = ({
 	children,
+
+	// leftPanel
 	tool,
 	setTool,
+
+	// bottomPanel - zoom tool
 	currentScale,
 	onZoomReset,
 	onZoomUpdate,
+
+	// bottomPanel - history tools
 	undo,
 	redo,
+
+	// bottomPanel - grid tool
 	gridObj,
 	onGridChange
-}) => {
+}: LayoutProps) => {
 	return (
 		<section className="layout">
 			<TopPanel tool={tool} setTool={setTool} />
