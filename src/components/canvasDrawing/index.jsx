@@ -1,7 +1,6 @@
 import './index.scss';
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import HistoryToolbar from 'components/toolbar/historyToolbar';
 import useHistory from 'hooks/useHistory';
 
 import { adjustmentRequired, drawElement, drawZone } from 'utils/roughHelper';
@@ -31,8 +30,6 @@ import {
 
 import cloneDeep from 'utils/cloneDeep';
 import drawGrid from 'utils/drawGrid';
-import GridToolbar from 'components/toolbar/gridToolbar';
-import ZoomToolbar from 'components/toolbar/zoomToolbar';
 import Layout from 'components/layout';
 
 const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
@@ -518,7 +515,21 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 	return (
 		<div className="canvasDrawing">
-			<Layout tool={tool} setTool={setTool}>
+			<Layout
+				// leftPanel
+				tool={tool}
+				setTool={setTool}
+				// bottomPanel - zoom tool
+				currentScale={`${Math.round(scale * 10) * 10}%`}
+				onZoomReset={() => reset(context)}
+				onZoomUpdate={handleZoom}
+				// bottomPanel - history tools
+				undo={undo}
+				redo={redo}
+				// bottomPanel - grid tool
+				gridObj={gridObj}
+				onGridChange={setGridObj}
+			>
 				{action === ACTIONS.WRITING && (
 					<textarea
 						ref={textAreaRef}
@@ -549,13 +560,13 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 					onMouseUp={handleMouseUp}
 					onMouseMove={handleMouseMove}
 				/>
-				<ZoomToolbar
+				{/* <ZoomToolbar
 					currentScale={`${Math.round(scale * 10) * 10}%`}
 					onReset={() => reset(context)}
 					onZoomUpdate={handleZoom}
 				/>
 				<HistoryToolbar undo={undo} redo={redo} />
-				<GridToolbar {...gridObj} onChange={setGridObj} />
+				<GridToolbar {...gridObj} onChange={setGridObj} /> */}
 			</Layout>
 		</div>
 	);

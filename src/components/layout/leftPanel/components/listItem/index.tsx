@@ -1,22 +1,24 @@
 import './index.scss';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 
 import trackSvg from 'assets/track.svg';
 
 interface Props {
-	children: React.ReactNode | string;
 	items?: { _id: string }[] | null;
 	icon: React.ReactNode | null;
+	label?: string;
 }
 
-const ListItem: FC<Props> = ({ children, items, icon }) => {
+const ListItem: FC<Props> = ({ items, icon, label }) => {
+	const [isExpand, setIsExpand] = useState(true);
+
 	return (
 		<li className="listItem">
-			<div className="__itemRow">
+			<div className="__itemRow" onClick={() => setIsExpand(p => !p)}>
 				{icon}
-				{children}
+				{label && <span className="titleLabel">{`${label} (${items?.length ?? '0'})`}</span>}
 			</div>
-			{items && (
+			{items && isExpand && (
 				<ul>
 					{items.map(item => {
 						return (

@@ -2,5 +2,10 @@
 	.__itemRow {
 		display: flex;
 		align-items: center;
+
+		.titleLabel {
+			margin-left: 4px;
+			cursor: pointer;
+		}
 	}
 }

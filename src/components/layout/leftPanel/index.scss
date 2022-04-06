@@ -1,7 +1,7 @@
 .leftPanel {
 	max-width: 300px;
 	overflow: scroll;
-	height: inherit;
+	height: calc(100vh - 40px);
 	padding: 8px;
 
 	ul {
@@ -42,10 +42,6 @@
 
 			&:last-child:after {
 				height: 15px;
-			}
-
-			.titleLabel {
-				margin-left: 4px;
 			}
 		}
 	}
