@@ -2,6 +2,7 @@ import './index.scss';
 import { gateways, mapElements, trackElements } from 'constants/syookData';
 import React from 'react';
 import ListItem from './components/listItem';
+import FacilityIcon from 'assets/facilityIcon';
 
 const LeftPanel = () => {
 	return (
@@ -9,11 +10,21 @@ const LeftPanel = () => {
 			<div className="leftPanel">
 				<span>Small Factory</span>
 				<ul>
-					<ListItem>zone</ListItem>
-					<ListItem>Space Image</ListItem>
-					<ListItem items={mapElements}>Map Elements</ListItem>
-					<ListItem items={trackElements}>Track Elements</ListItem>
-					<ListItem items={gateways}>Gateway</ListItem>
+					<ListItem icon={<FacilityIcon name="layer" />}>
+						<span className="titleLabel">zone</span>
+					</ListItem>
+					<ListItem icon={<FacilityIcon name="image" />}>
+						<span className="titleLabel">Space Image</span>
+					</ListItem>
+					<ListItem icon={<FacilityIcon name="layer" />} items={mapElements}>
+						<span className="titleLabel">Map Elements</span>
+					</ListItem>
+					<ListItem icon={<FacilityIcon name="track" />} items={trackElements}>
+						<span className="titleLabel">Track Elements</span>
+					</ListItem>
+					<ListItem icon={<FacilityIcon name="gateway" />} items={gateways}>
+						<span className="titleLabel">Gateway</span>
+					</ListItem>
 				</ul>
 			</div>
 		</>

@@ -4,6 +4,7 @@ body {
 		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	font-size: 1rem;
 }
 
 code {
@@ -13,4 +14,5 @@ code {
 :root {
 	--color-primary: #fff;
 	--color-secondary: cyan;
+	--grey-1: grey;
 }

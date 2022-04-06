@@ -6,13 +6,14 @@ import trackSvg from 'assets/track.svg';
 interface Props {
 	children: React.ReactNode | string;
 	items?: { _id: string }[] | null;
+	icon: React.ReactNode | null;
 }
 
-const ListItem: FC<Props> = ({ children, items }) => {
+const ListItem: FC<Props> = ({ children, items, icon }) => {
 	return (
 		<li className="listItem">
 			<div className="__itemRow">
-				<img src={trackSvg} width={24} height={24} />
+				{icon}
 				{children}
 			</div>
 			{items && (
