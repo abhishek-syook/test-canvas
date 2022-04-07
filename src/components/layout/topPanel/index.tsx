@@ -13,7 +13,7 @@ interface Props {
 
 const TopPanel: FC<Props> = ({ undo, redo, tool, setTool }) => {
 	return (
-		<div className='topPanel'>
+		<div className="topPanel">
 			<HistoryToolbar undo={undo} redo={redo} />
 			<Toolbar selectedTool={tool} onChange={value => setTool(value)} />
 		</div>
