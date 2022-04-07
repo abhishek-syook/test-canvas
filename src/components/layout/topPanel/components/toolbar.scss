@@ -1,0 +1,32 @@
+.topPanelSection {
+	width: 350px;
+	text-align: center;
+	color: var(--grey-1);
+
+	.__toolbar {
+		display: flex;
+		justify-content: space-around;
+		width: 350px;
+		border: 1px solid;
+		border-radius: 5px;
+		border-color: var(--grey-1);
+	}
+
+	button {
+		border: 0;
+	}
+
+	.__selected {
+		background-color: var(--background-selected);
+		color: var(--color-selected);
+	}
+
+	.__notSelected {
+		background-color: var(--white);
+		color: var(--grey-1);
+	}
+
+	.__toolText {
+		margin: 5px 0;
+	}
+}

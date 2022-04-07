@@ -1,6 +1,5 @@
 import React, { FC } from 'react';
-import Toolbar from 'components/toolbar';
-
+import Toolbar from './components/toolbar';
 interface Props {
 	// any props that come into the component
 	tool: string;

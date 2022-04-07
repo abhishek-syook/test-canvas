@@ -18,6 +18,8 @@ code {
 	--grey-2: #eff1f5;
 	--grey-3: #cacaca;
 	--white: #fff;
+	--color-selected: #4724d8;
+	--background-selected: #f5f4ff;
 }
 
 .canvasDrawingScrollBar::-webkit-scrollbar {
