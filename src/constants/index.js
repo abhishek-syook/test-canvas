@@ -15,6 +15,11 @@ export const ELEMENT_TYPES = Object.freeze({
 	GATEWAY: 'gateway'
 });
 
+export const ELEMENT_EDIT_TYPES = Object.freeze({
+	UNDO: 'undo',
+	REDO: 'redo'
+});
+
 export const ACTIONS = Object.freeze({
 	NONE: 'none',
 	MOVING: 'moving',

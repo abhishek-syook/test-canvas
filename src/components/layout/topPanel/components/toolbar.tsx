@@ -26,7 +26,7 @@ const Toolbar: FC<Props> = ({ selectedTool, onChange }) => {
 					);
 				})}
 			</div>
-			<h5 className="__toolText">Tools</h5>
+			<h5 className="__toolText">Tool</h5>
 		</div>
 	);
 };

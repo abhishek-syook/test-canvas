@@ -1,12 +1,12 @@
 .topPanelSection {
-	width: 350px;
+	width: 400px;
 	text-align: center;
 	color: var(--grey-1);
 
 	.__toolbar {
 		display: flex;
 		justify-content: space-around;
-		width: 350px;
+		width: 400px;
 		border: 1px solid;
 		border-radius: 5px;
 		border-color: var(--grey-1);
@@ -14,6 +14,12 @@
 
 	button {
 		border: 0;
+		&:hover {
+			background-color: var(--background-selected);
+			color: var(--color-selected);
+			cursor: pointer;
+			cursor: hand;
+		  }
 	}
 
 	.__selected {
@@ -27,6 +33,6 @@
 	}
 
 	.__toolText {
-		margin: 5px 0;
+		margin: 5px 0 0 0;
 	}
 }

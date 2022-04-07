@@ -50,7 +50,7 @@ const Layout = ({
 }: LayoutProps) => {
 	return (
 		<section className="layout">
-			<TopPanel tool={tool} setTool={setTool} />
+			<TopPanel tool={tool} setTool={setTool} undo={undo} redo={redo} />
 			<section className="__body">
 				<LeftPanel />
 				<div className="__content">
