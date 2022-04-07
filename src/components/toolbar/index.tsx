@@ -1,9 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FC } from 'react';
 import { ELEMENT_TYPES } from '../../constants';
 import ToolIcons from 'assets/toolIcons';
 
-const Toolbar = ({ selectedTool, onChange }) => {
+interface Props {
+	selectedTool: string;
+	onChange: (elementType: string) => string;
+}
+
+const Toolbar: FC<Props> = ({ selectedTool, onChange }) => {
 	return (
 		<div style={{ position: 'fixed', display: 'flex' }}>
 			{Object.values(ELEMENT_TYPES).map(element => {
@@ -12,7 +16,7 @@ const Toolbar = ({ selectedTool, onChange }) => {
 						<button
 							onClick={() => onChange(element)}
 							style={
-								selectedTool === element.type
+								selectedTool === element
 									? { backgroundColor: '#F5F4FF', color: '#4724D8' }
 									: { backgroundColor: '#FDFDFD' }
 							}
@@ -24,11 +28,6 @@ const Toolbar = ({ selectedTool, onChange }) => {
 			})}
 		</div>
 	);
-};
-
-Toolbar.propTypes = {
-	selectedTool: PropTypes.string.isRequired,
-	onChange: PropTypes.func.isRequired
 };
 
 export default Toolbar;

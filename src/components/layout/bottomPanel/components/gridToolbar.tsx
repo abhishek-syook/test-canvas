@@ -1,15 +1,20 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-const GridToolbar = ({ isEnable, snapSize, onChange }) => {
+interface GridToolbarProps {
+	gridObj: {
+		isEnable: boolean;
+		snapSize: number;
+	};
+	onChange: (gridObj: {}) => void;
+}
+
+const GridToolbar = ({ gridObj, onChange }: GridToolbarProps) => {
+	const { isEnable, snapSize } = gridObj;
+
 	return (
 		<div
 			style={{
-				left: 200,
-				bottom: 0,
-				padding: 10,
-				display: 'flex',
-				position: 'fixed'
+				display: 'flex'
 			}}
 		>
 			<div>
@@ -18,7 +23,7 @@ const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 					id="gridDisplay"
 					name="isEnable"
 					checked={isEnable}
-					onChange={() => onChange(p => ({ ...p, isEnable: !isEnable }))}
+					onChange={() => onChange((p: {}) => ({ ...p, isEnable: !isEnable }))}
 				/>
 				<label htmlFor="gridDisplay">Show Grid</label>
 			</div>
@@ -31,17 +36,11 @@ const GridToolbar = ({ isEnable, snapSize, onChange }) => {
 					min={0}
 					step={0.5}
 					value={snapSize}
-					onChange={e => onChange(p => ({ ...p, snapSize: +e.target.value }))}
+					onChange={e => onChange((p: {}) => ({ ...p, snapSize: +e.target.value }))}
 				/>
 			</div>
 		</div>
 	);
-};
-
-GridToolbar.propTypes = {
-	isEnable: PropTypes.bool.isRequired,
-	snapSize: PropTypes.number.isRequired,
-	onChange: PropTypes.func.isRequired
 };
 
 export default GridToolbar;

@@ -3,15 +3,7 @@ import PropTypes from 'prop-types';
 
 const ZoomToolbar = ({ onReset, currentScale, onZoomUpdate }) => {
 	return (
-		<div
-			style={{
-				left: 100,
-				bottom: 0,
-				padding: 10,
-				display: 'flex',
-				position: 'fixed'
-			}}
-		>
+		<div>
 			<button onClick={e => onZoomUpdate(e, 53, false)}>-</button>
 			<button onClick={onReset}>{currentScale}</button>
 			<button onClick={e => onZoomUpdate(e, -53, false)}>+</button>

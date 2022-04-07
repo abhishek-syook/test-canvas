@@ -4,6 +4,7 @@ body {
 		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	font-size: 1rem;
 }
 
 code {
@@ -12,5 +13,37 @@ code {
 
 :root {
 	--color-primary: #fff;
-	--color-secondary: cyan;
+	--color-secondary: #00ffff;
+	--grey-1: grey;
+	--grey-2: #eff1f5;
+	--grey-3: #cacaca;
+	--white: #fff;
+}
+
+.canvasDrawingScrollBar::-webkit-scrollbar {
+	background: transparent !important;
+	width: 6px;
+	height: 8px;
+}
+
+.canvasDrawingScrollBar::-webkit-scrollbar-thumb {
+	background-color: transparent !important;
+	border: none;
+	border-radius: 4px !important;
+	box-shadow: none;
+}
+
+.canvasDrawingScrollBar > div::-webkit-scrollbar-thumb {
+	background-color: transparent !important;
+	border: none;
+	border-radius: 4px !important;
+	box-shadow: none;
+}
+
+.canvasDrawingScrollBar:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(32, 33, 36, 0.38) !important;
+}
+
+.canvasDrawingScrollBar::-webkit-scrollbar-track {
+	background-color: transparent;
 }

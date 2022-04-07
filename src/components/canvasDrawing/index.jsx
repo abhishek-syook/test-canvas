@@ -1,7 +1,6 @@
 import './index.scss';
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import HistoryToolbar from 'components/toolbar/historyToolbar';
 import useHistory from 'hooks/useHistory';
 
 import { adjustmentRequired, drawElement, drawZone } from 'utils/roughHelper';
@@ -29,11 +28,9 @@ import {
 	ZOOM_SENSITIVITY
 } from '../../constants';
 
-import Toolbar from '../toolbar';
 import cloneDeep from 'utils/cloneDeep';
 import drawGrid from 'utils/drawGrid';
-import GridToolbar from 'components/toolbar/gridToolbar';
-import ZoomToolbar from 'components/toolbar/zoomToolbar';
+import Layout from 'components/layout';
 
 const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 	const canvasRef = useRef();
@@ -518,44 +515,52 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 	return (
 		<div className="canvasDrawing">
-			<Toolbar selectedTool={tool} onChange={value => setTool(value)} />
-			{action === ACTIONS.WRITING && (
-				<textarea
-					ref={textAreaRef}
-					onBlur={handleTextBlur}
-					style={{
-						top: selectedElement.y1 - 3,
-						left: selectedElement.x1,
-						font: '24px sans-serif',
-						margin: 0,
-						border: 0,
-						outline: 0,
-						padding: 0,
-						resize: 'auto',
-						position: 'fixed',
-						overflow: 'hidden',
-						whiteSpace: 'pre',
-						background: 'transparent'
-					}}
-				/>
-			)}
-
-			<canvas
-				ref={canvasRef}
-				style={{ background: 'var(--color-secondary)' }}
-				width={canvasWidth}
-				height={canvasHeight}
-				onMouseDown={handleMouseDown}
-				onMouseUp={handleMouseUp}
-				onMouseMove={handleMouseMove}
-			/>
-			<ZoomToolbar
+			<Layout
+				// leftPanel
+				tool={tool}
+				setTool={setTool}
+				// bottomPanel - zoom tool
 				currentScale={`${Math.round(scale * 10) * 10}%`}
-				onReset={() => reset(context)}
+				onZoomReset={() => reset(context)}
 				onZoomUpdate={handleZoom}
-			/>
-			<HistoryToolbar undo={undo} redo={redo} />
-			<GridToolbar {...gridObj} onChange={setGridObj} />
+				// bottomPanel - history tools
+				undo={undo}
+				redo={redo}
+				// bottomPanel - grid tool
+				gridObj={gridObj}
+				onGridChange={setGridObj}
+			>
+				{action === ACTIONS.WRITING && (
+					<textarea
+						ref={textAreaRef}
+						onBlur={handleTextBlur}
+						style={{
+							top: selectedElement.y1 - 3,
+							left: selectedElement.x1,
+							font: '24px sans-serif',
+							margin: 0,
+							border: 0,
+							outline: 0,
+							padding: 0,
+							resize: 'auto',
+							position: 'fixed',
+							overflow: 'hidden',
+							whiteSpace: 'pre',
+							background: 'transparent'
+						}}
+					/>
+				)}
+
+				<canvas
+					ref={canvasRef}
+					style={{ backgroundColor: 'var(--grey-3)' }}
+					width={canvasWidth}
+					height={canvasHeight}
+					onMouseDown={handleMouseDown}
+					onMouseUp={handleMouseUp}
+					onMouseMove={handleMouseMove}
+				/>
+			</Layout>
 		</div>
 	);
 };
