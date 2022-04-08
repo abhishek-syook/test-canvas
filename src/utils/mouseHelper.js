@@ -1,4 +1,10 @@
-import { CURSOR, CURSOR_POSITION, ELEMENT_TYPES, NEAR_POINT_DISTANCE } from '../constants';
+import {
+	CANVAS_POSITION,
+	CURSOR,
+	CURSOR_POSITION,
+	ELEMENT_TYPES,
+	NEAR_POINT_DISTANCE
+} from '../constants';
 
 export const adjustElementCoordinates = element => {
 	const { type, x1, y1, x2, y2 } = element;
@@ -211,10 +217,10 @@ export const scalePoint = (p1, scale) => {
 
 export const updatedPoints = (scale, client, viewPort) => {
 	if (scale === 1 && !(viewPort.x && viewPort.y)) {
-		return { updatedX: client.x, updatedY: client.y };
+		return { updatedX: client.x - CANVAS_POSITION.x, updatedY: client.y - CANVAS_POSITION.y };
 	} else {
-		const x = client.x / scale + viewPort.x;
-		const y = client.y / scale + viewPort.y;
+		const x = (client.x - CANVAS_POSITION.x) / scale + viewPort.x;
+		const y = (client.y - CANVAS_POSITION.y) / scale + viewPort.y;
 		return { updatedX: x, updatedY: y };
 	}
 };
