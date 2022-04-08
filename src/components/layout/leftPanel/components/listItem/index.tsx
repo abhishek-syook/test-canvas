@@ -1,10 +1,10 @@
 import './index.scss';
 import React, { FC, useState } from 'react';
 
-import trackSvg from 'assets/track.svg';
+import ToolIcons from 'assets/toolIcons';
 
 interface Props {
-	items?: { _id: string }[] | null;
+	items?: { _id: string; elementType?: string }[] | null;
 	icon: React.ReactNode | null;
 	label?: string;
 }
@@ -23,7 +23,7 @@ const ListItem: FC<Props> = ({ items, icon, label }) => {
 					{items.map(item => {
 						return (
 							<li key={item._id} className="__itemRow">
-								<img src={trackSvg} width={24} height={24} />
+								<ToolIcons name={item.elementType ? item.elementType : 'gateway'} />
 								{item._id}
 							</li>
 						);
