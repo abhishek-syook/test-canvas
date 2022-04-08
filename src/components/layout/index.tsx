@@ -59,8 +59,6 @@ const Layout = ({
 						currentScale={currentScale}
 						onZoomReset={onZoomReset}
 						onZoomUpdate={onZoomUpdate}
-						undo={undo}
-						redo={redo}
 						gridObj={gridObj}
 						onGridChange={onGridChange}
 					/>
