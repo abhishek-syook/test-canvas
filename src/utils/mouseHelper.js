@@ -209,12 +209,15 @@ export const scalePoint = (p1, scale) => {
 	return { x: p1.x / scale, y: p1.y / scale };
 };
 
-export const updatedPoints = (scale, client, viewPort) => {
+export const updatedPoints = (scale, client, viewPort, canvasOffset) => {
 	if (scale === 1 && !(viewPort.x && viewPort.y)) {
-		return { updatedX: client.x, updatedY: client.y };
+		return {
+			updatedX: client.x - canvasOffset.offsetLeft,
+			updatedY: client.y - canvasOffset.offsetTop
+		};
 	} else {
-		const x = client.x / scale + viewPort.x;
-		const y = client.y / scale + viewPort.y;
+		const x = (client.x - canvasOffset.offsetLeft) / scale + viewPort.x;
+		const y = (client.y - canvasOffset.offsetTop) / scale + viewPort.y;
 		return { updatedX: x, updatedY: y };
 	}
 };
