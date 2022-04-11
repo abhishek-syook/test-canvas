@@ -149,7 +149,6 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		if (canvasRef.current) {
 			// get new drawing context
 			const renderCtx = canvasRef.current.getContext('2d');
-
 			if (renderCtx) {
 				reset(renderCtx);
 			}
@@ -303,7 +302,10 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		if (action === ACTIONS.WRITING) return;
 
 		const { clientX, clientY } = event;
-		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft);
+		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft, {
+			offsetLeft: canvasRef.current.offsetLeft,
+			offsetTop: canvasRef.current.offsetTop
+		});
 		if (tool === ELEMENT_TYPES.SELECTION) {
 			const element = getElementAtPosition(updatedX, updatedY, elements);
 			if (element) {
@@ -355,7 +357,10 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 	const handleMouseMove = event => {
 		const { clientX, clientY } = event;
-		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft);
+		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft, {
+			offsetLeft: canvasRef.current.offsetLeft,
+			offsetTop: canvasRef.current.offsetTop
+		});
 		if (tool === ELEMENT_TYPES.SELECTION) {
 			const element = getElementAtPosition(updatedX, updatedY, elements);
 			event.target.style.cursor = element ? cursorForPosition(element.position) : CURSOR.DEFAULT;
@@ -472,7 +477,10 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 	const handleMouseUp = event => {
 		const { clientX, clientY } = event;
-		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft);
+		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft, {
+			offsetLeft: canvasRef.current.offsetLeft,
+			offsetTop: canvasRef.current.offsetTop
+		});
 		if (selectedElement) {
 			if (
 				selectedElement.type === ELEMENT_TYPES.TEXT &&
