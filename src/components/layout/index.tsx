@@ -13,6 +13,7 @@ interface LayoutProps {
 	// leftPanel
 	tool: string;
 	setTool: (elementType: string) => string;
+	onElementSelect: () => void;
 
 	// bottomPanel - zoom tool
 	currentScale: string;
@@ -31,71 +32,59 @@ interface LayoutProps {
 	element: null | {
 		_id: string;
 		type: string;
-		coordinates: { x: number; y: number }[];
-		elementType: string;
-		label: string;
-		labelCoordinates: {
+		coordinates:
+			| { x: number; y: number }[]
+			| {
+					x: number;
+					y: number;
+					z: number;
+			  };
+		elementType?: string;
+		label?: string;
+		labelCoordinates?: {
 			x: null;
 			y: null;
 		};
-		zoneId: string;
-		elementProperties: {
+		zoneId?: string;
+		clusterId?:
+			| string
+			| {
+					labels: any;
+					_id: string;
+					name: string;
+					description: string;
+					zoneId: {
+						labels: any;
+						_id: string;
+						name: string;
+						description: string;
+					};
+			  };
+		elementProperties?: {
 			fill: string;
 			fillOpacity: number;
 			stroke: string;
 			strokeWidth: number;
 		};
+		name?: string;
+		hardwareType?: string;
+		identifierKey?: string;
+		identifierValue?: string;
+		plotCoordinates?: {
+			x: number;
+			y: number;
+			z: number;
+		};
 	};
 }
 
-const mapData = {
-	_id: '61a6028b49fac1004c8d25e2',
-	type: 'map',
-	coordinates: [
-		{
-			x: 90,
-			y: 5
-		},
-		{
-			x: 105,
-			y: 5
-		},
-		{
-			x: 105,
-			y: 40
-		},
-		{
-			x: 90,
-			y: 40
-		},
-		{
-			x: 90,
-			y: 5
-		}
-	],
-	elementType: 'polygon',
-	label: 'PM store right 2',
-	labelCoordinates: {
-		x: null,
-		y: null
-	},
-	zoneId: '61a6028b49fac1004c8d25b4',
-	__v: 0,
-	createdAt: '2021-11-30T10:52:59.828Z',
-	updatedAt: '2022-02-16T06:39:38.632Z',
-	elementProperties: {
-		fill: '#000',
-		fillOpacity: 0.3,
-		stroke: 'rgba(0,0,0,1)',
-		strokeWidth: 1
-	}
-};
 const Layout = ({
 	children,
 
 	// leftPanel
 	tool,
 	setTool,
+	onElementSelect,
 
 	// bottomPanel - zoom tool
 	currentScale,
@@ -117,7 +106,7 @@ const Layout = ({
 		<section className="layout">
 			<TopPanel tool={tool} setTool={setTool} undo={undo} redo={redo} />
 			<section className="__body">
-				<LeftPanel />
+				<LeftPanel onElementSelect={onElementSelect} />
 				<div className="__content">
 					{children}
 					<BottomPanel
@@ -128,7 +117,7 @@ const Layout = ({
 						onGridChange={onGridChange}
 					/>
 				</div>
-				<RightPanel element={element ? mapData : null} />
+				<RightPanel element={element} />
 			</section>
 		</section>
 	);

@@ -62,10 +62,10 @@ const RightPanel = ({ element }: RightPanelProps) => {
 			<span>Editor</span>
 			{!element ? (
 				<div className="notSelected">No Item Selected</div>
-			) : Object.keys(element).includes('elementProperties') ? (
+			) : element.elementType ? (
 				<MapAndTrackEdit
 					type={element.type}
-					elementType={element.elementType}
+					elementType={(element.elementType = element.elementType!)}
 					zone={(element.zoneId = element.zoneId!)}
 					cluster={element.clusterId}
 					label={(element.label = element.label!)}

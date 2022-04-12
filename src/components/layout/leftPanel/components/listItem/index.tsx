@@ -7,9 +7,10 @@ interface Props {
 	items?: { _id: string; elementType?: string }[] | null;
 	icon: React.ReactNode | null;
 	label?: string;
+	onElementSelect: (element: object) => void;
 }
 
-const ListItem: FC<Props> = ({ items, icon, label }) => {
+const ListItem: FC<Props> = ({ items, icon, label, onElementSelect }) => {
 	const [isExpand, setIsExpand] = useState(true);
 
 	return (
@@ -22,7 +23,7 @@ const ListItem: FC<Props> = ({ items, icon, label }) => {
 				<ul>
 					{items.map(item => {
 						return (
-							<li key={item._id} className="__itemRow">
+							<li key={item._id} className="__itemRow" onClick={() => onElementSelect(item)}>
 								<ToolIcons name={item.elementType ? item.elementType : 'gateway'} />
 								{item._id}
 							</li>

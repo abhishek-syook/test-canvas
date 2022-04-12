@@ -49,6 +49,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		width: canvasWidth,
 		height: canvasHeight
 	});
+	const [editElement, setEditElement] = useState(null);
 	const isResetRef = useRef(false);
 	const lastMousePosRef = useRef(ORIGIN);
 	const lastOffsetRef = useRef(ORIGIN);
@@ -504,6 +505,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			const element = getElementAtPosition(updatedX, updatedY, elements);
 			if (!element) {
 				setSelectedElement(null);
+				setEditElement(null);
 			}
 		}
 	};
@@ -518,12 +520,18 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		});
 	};
 
+	const onElementSelect = element => {
+		setEditElement(element);
+		// setSelectedElement(editElement);
+	};
+
 	return (
 		<div className="canvasDrawing">
 			<Layout
 				// leftPanel
 				tool={tool}
 				setTool={setTool}
+				onElementSelect={onElementSelect}
 				// bottomPanel - zoom tool
 				currentScale={`${Math.round(scale * 10) * 10}%`}
 				onZoomReset={() => reset(context)}
@@ -535,7 +543,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				gridObj={gridObj}
 				onGridChange={setGridObj}
 				// rightPanel - selected item
-				element={selectedElement}
+				element={editElement}
 			>
 				{action === ACTIONS.WRITING && (
 					<textarea
