@@ -60,8 +60,8 @@ const RightPanel = ({ element }: RightPanelProps) => {
 	return (
 		<div className="rightPanel">
 			<span>Editor</span>
-			{!element ? (
-				<div className="notSelected">No Item Selected</div>
+			{!element || element.type === 'image' ? (
+				<div className="notSelected">{element ? 'Cannot Edit Image' : 'No Item Selected'}</div>
 			) : element.elementType ? (
 				<MapAndTrackEdit
 					type={element.type}
