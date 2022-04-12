@@ -500,7 +500,12 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			return;
 		}
 		setAction(ACTIONS.NONE);
-		setSelectedElement(null);
+		if (tool === ELEMENT_TYPES.SELECTION) {
+			const element = getElementAtPosition(updatedX, updatedY, elements);
+			if (!element) {
+				setSelectedElement(null);
+			}
+		}
 	};
 
 	const handleTextBlur = event => {
@@ -529,6 +534,8 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				// bottomPanel - grid tool
 				gridObj={gridObj}
 				onGridChange={setGridObj}
+				// rightPanel - selected item
+				element={selectedElement}
 			>
 				{action === ACTIONS.WRITING && (
 					<textarea
