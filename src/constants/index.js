@@ -57,8 +57,3 @@ export const INITIAL_SCALE = 1;
 export const ORIGIN = Object.freeze({ x: 0, y: 0 });
 
 export const ZOOM_SENSITIVITY = 500; // bigger for lower zoom per scroll
-
-export const CANVAS_POSITION = {
-	x: 663,
-	y: 72
-};
