@@ -307,6 +307,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			offsetLeft: canvasRef.current.offsetLeft,
 			offsetTop: canvasRef.current.offsetTop
 		});
+		setEditElement(null);
 		if (tool === ELEMENT_TYPES.SELECTION) {
 			const element = getElementAtPosition(updatedX, updatedY, elements);
 			if (element) {
@@ -530,7 +531,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 
 	const onElementSelect = element => {
 		setEditElement(element);
-		// setSelectedElement(editElement);
+		setSelectedElement(null);
 	};
 
 	return (
