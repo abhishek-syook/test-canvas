@@ -13,7 +13,7 @@ const Toolbar: FC<Props> = ({ selectedTool, onChange }) => {
 	return (
 		<div className="topPanelSection">
 			<div className="__toolbar">
-				{Object.values(ELEMENT_TYPES).map(element => {
+				{Object.values(ELEMENT_TYPES).map((element: string) => {
 					return (
 						<div key={element} title={element[0].toUpperCase() + element.slice(1)}>
 							<button

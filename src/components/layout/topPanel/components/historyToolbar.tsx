@@ -13,7 +13,7 @@ const HistoryToolbar = ({ undo, redo }: HistoryToolbarProps) => {
 	return (
 		<div className="topPanelSection" style={{ width: '80px' }}>
 			<div className="__toolbar" style={{ width: '80px' }}>
-				{Object.values(ELEMENT_EDIT_TYPES).map(element => {
+				{Object.values(ELEMENT_EDIT_TYPES).map((element: string) => {
 					return (
 						<div key={element} title={element[0].toUpperCase() + element.slice(1)}>
 							<button onClick={element === 'undo' ? undo : redo} className="__notSelected">

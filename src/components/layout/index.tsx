@@ -54,14 +54,16 @@ const Layout = ({
 			<section className="__body">
 				<LeftPanel />
 				<div className="__content">
-					{children}
-					<BottomPanel
-						currentScale={currentScale}
-						onZoomReset={onZoomReset}
-						onZoomUpdate={onZoomUpdate}
-						gridObj={gridObj}
-						onGridChange={onGridChange}
-					/>
+					<>
+						{children}
+						<BottomPanel
+							currentScale={currentScale}
+							onZoomReset={onZoomReset}
+							onZoomUpdate={onZoomUpdate}
+							gridObj={gridObj}
+							onGridChange={onGridChange}
+						/>
+					</>
 				</div>
 				<RightPanel />
 			</section>
