@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 const icons = {
 	layer: (
@@ -17,8 +16,14 @@ const icons = {
 	)
 };
 
-const FacilityIcon = ({ name, width = 24, height = 24 }) => {
-	const icon = icons[name];
+interface FacilityIconProps {
+	name: string;
+	width?: number;
+	height?: number;
+}
+
+const FacilityIcon = ({ name, width = 24, height = 24 }: FacilityIconProps) => {
+	const icon = icons[name as keyof typeof icons];
 
 	if (!icon) {
 		return null;
@@ -35,12 +40,6 @@ const FacilityIcon = ({ name, width = 24, height = 24 }) => {
 			{icon}
 		</svg>
 	);
-};
-
-FacilityIcon.propTypes = {
-	name: PropTypes.string.isRequired,
-	width: PropTypes.number,
-	height: PropTypes.number
 };
 
 export default FacilityIcon;

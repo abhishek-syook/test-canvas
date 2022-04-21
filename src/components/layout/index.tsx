@@ -6,18 +6,24 @@ import LeftPanel from './leftPanel';
 import TopPanel from './topPanel';
 import RightPanel from './rightPanel';
 import BottomPanel from './bottomPanel';
+import { ElementType } from 'types';
 
 interface LayoutProps {
-	children: Node;
+	children: React.ReactNode;
 
 	// leftPanel
 	tool: string;
-	setTool: (elementType: string) => string;
+	setTool: (elementType: string) => void;
+	onElementSelect: (element: ElementType) => void;
 
 	// bottomPanel - zoom tool
 	currentScale: string;
 	onZoomReset: () => void;
-	onZoomUpdate: () => void;
+	onZoomUpdate: (
+		event: React.MouseEvent<HTMLButtonElement>,
+		zoomValue: number,
+		mouseWheel?: boolean
+	) => void;
 	// bottomPanel - history tools
 
 	undo: () => void;
@@ -25,7 +31,10 @@ interface LayoutProps {
 	// bottomPanel - grid tool
 
 	gridObj: { isEnable: boolean; snapSize: number };
-	onGridChange: () => void;
+	onGridChange: (newGridObj: { isEnable: boolean; snapSize: number }) => void;
+
+	// rightPanel - selected element
+	element: null | ElementType;
 }
 
 const Layout = ({
@@ -34,6 +43,7 @@ const Layout = ({
 	// leftPanel
 	tool,
 	setTool,
+	onElementSelect,
 
 	// bottomPanel - zoom tool
 	currentScale,
@@ -46,13 +56,16 @@ const Layout = ({
 
 	// bottomPanel - grid tool
 	gridObj,
-	onGridChange
+	onGridChange,
+
+	// rightPanel - selected element
+	element
 }: LayoutProps) => {
 	return (
 		<section className="layout">
 			<TopPanel tool={tool} setTool={setTool} undo={undo} redo={redo} />
 			<section className="__body">
-				<LeftPanel />
+				<LeftPanel onElementSelect={onElementSelect} />
 				<div className="__content">
 					<>
 						{children}
@@ -65,7 +78,7 @@ const Layout = ({
 						/>
 					</>
 				</div>
-				<RightPanel />
+				<RightPanel element={element} />
 			</section>
 		</section>
 	);

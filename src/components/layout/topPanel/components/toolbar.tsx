@@ -6,7 +6,7 @@ import ToolIcons from 'assets/toolIcons';
 
 interface Props {
 	selectedTool: string;
-	onChange: (elementType: string) => string;
+	onChange: (elementType: string) => void;
 }
 
 const Toolbar: FC<Props> = ({ selectedTool, onChange }) => {
@@ -18,7 +18,7 @@ const Toolbar: FC<Props> = ({ selectedTool, onChange }) => {
 						<div key={element} title={element[0].toUpperCase() + element.slice(1)}>
 							<button
 								onClick={() => onChange(element)}
-								className={selectedTool === element ? '__selected' : '__notSelected'}
+								className={selectedTool === element ? '__selected' : '__default'}
 							>
 								<ToolIcons name={element} />
 							</button>

@@ -1,6 +1,5 @@
 import './index.scss';
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import useHistory from 'hooks/useHistory';
 
 import { adjustmentRequired, drawElement, drawZone } from 'utils/roughHelper';
@@ -31,16 +30,53 @@ import {
 import cloneDeep from 'utils/cloneDeep';
 import drawGrid from 'utils/drawGrid';
 import Layout from 'components/layout';
+import { ElementType } from 'types';
 
-const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
-	const canvasRef = useRef();
-	const textAreaRef = useRef();
+interface CanvasDrawingProps {
+	canvasWidth: number;
+	canvasHeight: number;
+	zone: {};
+}
+
+type SelectedElementType = {
+	id?: number;
+	x1?: number;
+	y1?: number;
+	x2?: number;
+	y2?: number;
+	type?: string;
+	position?: string;
+	options?: { text?: string };
+	xOffsets?: number[];
+	yOffsets?: number[];
+	offsetX?: number;
+	offsetY?: number;
+	text?: string;
+	points?: { x: number; y: number }[];
+	x?: number;
+	y?: number;
+};
+
+const CanvasDrawing = ({
+	canvasWidth,
+	canvasHeight,
+	zone = {
+		width: 300,
+		height: 200,
+		name: 'Small Factory'
+	}
+}: CanvasDrawingProps) => {
+	const canvasRef = useRef<HTMLCanvasElement>(null!);
+	const textAreaRef = useRef<HTMLTextAreaElement>(null!);
 	const [elements, setElements, undo, redo] = useHistory([]);
-	const [action, setAction] = useState(false);
+	const [action, setAction] = useState<string | boolean>(false);
 	const [tool, setTool] = useState(ELEMENT_TYPES.SELECTION);
-	const [selectedElement, setSelectedElement] = useState(null);
-	const [gridObj, setGridObj] = useState({ isEnable: false, snapSize: 10 });
-	const [context, setContext] = useState(null);
+	const [selectedElement, setSelectedElement] = useState<SelectedElementType | null>(null);
+	const [gridObj, setGridObj] = useState<{ isEnable: boolean; snapSize: number }>({
+		isEnable: false,
+		snapSize: 10
+	});
+	const [context, setContext] = useState<CanvasRenderingContext2D | null>(null!);
 	const [scale, setScale] = useState(INITIAL_SCALE);
 	const [offset, setOffset] = useState(ORIGIN);
 	const [mousePos, setMousePos] = useState(ORIGIN);
@@ -49,6 +85,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		width: canvasWidth,
 		height: canvasHeight
 	});
+	const [editElement, setEditElement] = useState<ElementType | null>(null);
 	const isResetRef = useRef(false);
 	const lastMousePosRef = useRef(ORIGIN);
 	const lastOffsetRef = useRef(ORIGIN);
@@ -68,8 +105,8 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		zone && drawZone(context, zone);
 
 		drawGrid({ context, viewportTopLeft, visibleDimensions, ...gridObj });
-		elements.forEach(element => {
-			if (action === ACTIONS.WRITING && selectedElement.id === element.id) {
+		elements.forEach((element: SelectedElementType) => {
+			if (action === ACTIONS.WRITING && selectedElement?.id === element.id) {
 				return;
 			}
 			drawElement(context, element, selectedElement);
@@ -87,7 +124,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 	]);
 
 	useEffect(() => {
-		const undoRedoFunction = event => {
+		const undoRedoFunction = (event: KeyboardEvent) => {
 			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === KEYBOARD_KEYS.Z) {
 				if (event.shiftKey) {
 					redo();
@@ -110,7 +147,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 	useEffect(() => {
 		if (action === ACTIONS.WRITING) {
 			textAreaRef.current.focus();
-			textAreaRef.current.value = selectedElement.text;
+			textAreaRef.current.value = selectedElement?.text!;
 		}
 	}, [action, selectedElement]);
 
@@ -172,7 +209,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			return;
 		}
 
-		const handleUpdateMouse = event => {
+		const handleUpdateMouse = (event: MouseEvent) => {
 			event.preventDefault();
 			if (canvasRef.current) {
 				const viewportMousePos = { x: event.clientX, y: event.clientY };
@@ -251,7 +288,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			return;
 		}
 
-		const handleWheel = event => {
+		const handleWheel = (event: WheelEvent) => {
 			handleZoom(event, event.deltaY);
 		};
 
@@ -259,7 +296,15 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		return () => canvasElem.removeEventListener('wheel', handleWheel);
 	}, [handleZoom]);
 
-	const updateElement = (id, x1, y1, x2, y2, type, options) => {
+	const updateElement = (
+		id: number,
+		x1: number,
+		y1: number,
+		x2: number | null,
+		y2: number | null,
+		type: string,
+		options?: { text?: string }
+	) => {
 		const elementsCopy = [...elements];
 
 		switch (type) {
@@ -275,11 +320,11 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				break;
 
 			case ELEMENT_TYPES.TEXT: {
-				const textWidth = canvasRef.current.getContext('2d').measureText(options.text).width;
+				const textWidth = canvasRef.current.getContext('2d')!.measureText(options?.text!).width;
 				const textHeight = 24;
 				elementsCopy[id] = {
 					...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
-					text: options.text
+					text: options?.text
 				};
 				break;
 			}
@@ -292,13 +337,13 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				break;
 
 			default:
-				throw Error(`Type not recognised: ${type}`);
+				throw Error(`Type not recognized: ${type}`);
 		}
 
 		setElements(elementsCopy, true);
 	};
 
-	const handleMouseDown = event => {
+	const handleMouseDown = (event: React.MouseEvent) => {
 		if (action === ACTIONS.WRITING) return;
 
 		const { clientX, clientY } = event;
@@ -306,14 +351,15 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			offsetLeft: canvasRef.current.offsetLeft,
 			offsetTop: canvasRef.current.offsetTop
 		});
+		setEditElement(null);
 		if (tool === ELEMENT_TYPES.SELECTION) {
 			const element = getElementAtPosition(updatedX, updatedY, elements);
 			if (element) {
 				if (
 					[ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(element.type)
 				) {
-					const xOffsets = element.points.map(point => updatedX - point.x);
-					const yOffsets = element.points.map(point => updatedY - point.y);
+					const xOffsets = element.points.map((point: { x: number }) => updatedX - point.x);
+					const yOffsets = element.points.map((point: { y: number }) => updatedY - point.y);
 					setSelectedElement({ ...element, xOffsets, yOffsets });
 				} else if (ELEMENT_TYPES.CIRCLE === element.type) {
 					const offsetX = updatedX - element.x;
@@ -328,7 +374,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 					const offsetY = updatedY - element.y1;
 					setSelectedElement({ ...element, offsetX, offsetY });
 				}
-				setElements(prevState => prevState);
+				setElements((prevState: {}[]) => prevState);
 
 				if (element.position === CURSOR_POSITION.INSIDE) {
 					setAction(ACTIONS.MOVING);
@@ -340,22 +386,22 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				lastMousePosRef.current = { x: event.pageX, y: event.pageY };
 			}
 		} else {
-			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type)) {
+			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type!)) {
 				const index = elements.length - 1;
 				const { x1, y1 } = elements[index];
 				updateElement(index, x1, y1, updatedX, updatedY, tool);
 			} else {
 				const id = elements.length;
 				const element = createElement(id, updatedX, updatedY, updatedX, updatedY, tool);
-				setElements(p => [...p, element]);
-				setSelectedElement(element);
+				setElements((p: {}[]) => [...p, element]);
+				setSelectedElement(element as object);
 
 				setAction(tool === ELEMENT_TYPES.TEXT ? ACTIONS.WRITING : ACTIONS.DRAWING);
 			}
 		}
 	};
 
-	const handleMouseMove = event => {
+	const handleMouseMove = (event: React.MouseEvent) => {
 		const { clientX, clientY } = event;
 		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft, {
 			offsetLeft: canvasRef.current.offsetLeft,
@@ -363,28 +409,33 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		});
 		if (tool === ELEMENT_TYPES.SELECTION) {
 			const element = getElementAtPosition(updatedX, updatedY, elements);
-			event.target.style.cursor = element ? cursorForPosition(element.position) : CURSOR.DEFAULT;
+			(event.target as any).style.cursor = element
+				? cursorForPosition(element.position)
+				: CURSOR.DEFAULT;
 		}
 
 		if (action === ACTIONS.DRAWING) {
-			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
+			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type!)) {
 				const index = elements.length - 1;
 				const { x1, y1 } = elements[index];
-				if (selectedElement.points.length > 1) {
-					selectedElement.points = selectedElement.points.splice(0, selectedElement.points.length - 1);
+				if (selectedElement?.points?.length! > 1) {
+					selectedElement!.points = selectedElement?.points?.splice(
+						0,
+						selectedElement?.points?.length! - 1
+					);
 				}
 				updateElement(index, x1, y1, updatedX, updatedY, tool);
-			} else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
+			} else if (ELEMENT_TYPES.CIRCLE === selectedElement?.type) {
 				const { id, x, y } = selectedElement;
 				const elementsCopy = [...elements];
 				const radius = getRadius(x, y, updatedX, updatedY);
-				elementsCopy[id] = { ...elementsCopy[id], radius: radius };
+				elementsCopy[id!] = { ...elementsCopy[id!], radius: radius };
 				setElements(elementsCopy, true);
-			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
-				const { id } = selectedElement;
+			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement?.type!)) {
+				const { id } = selectedElement as SelectedElementType;
 				const elementsCopy = [...elements];
-				elementsCopy[id] = {
-					...elementsCopy[id],
+				elementsCopy[id!] = {
+					...elementsCopy[id!],
 					point: { x: updatedX, y: updatedY }
 				};
 				setElements(elementsCopy, true);
@@ -405,77 +456,82 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		} else if (action === ACTIONS.MOVING) {
 			if (
 				[ELEMENT_TYPES.PENCIL, ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(
-					selectedElement.type
+					selectedElement?.type!
 				)
 			) {
-				const newPoints = selectedElement.points.map((_, index) => ({
-					x: updatedX - selectedElement.xOffsets[index],
-					y: updatedY - selectedElement.yOffsets[index]
+				const newPoints = selectedElement?.points?.map((_, index) => ({
+					x: updatedX - selectedElement?.xOffsets![index],
+					y: updatedY - selectedElement?.yOffsets![index]
 				}));
 
 				const elementsCopy = [...elements];
-				elementsCopy[selectedElement.id] = {
-					...elementsCopy[selectedElement.id],
+				elementsCopy[selectedElement?.id!] = {
+					...elementsCopy[selectedElement?.id!],
 					points: newPoints
 				};
 				setElements(elementsCopy, true);
-			} else if ([ELEMENT_TYPES.CIRCLE].includes(selectedElement.type)) {
-				const { id, offsetX, offsetY } = selectedElement;
+			} else if ([ELEMENT_TYPES.CIRCLE].includes(selectedElement?.type!)) {
+				const { id, offsetX, offsetY } = selectedElement as SelectedElementType;
 				const elementsCopy = [...elements];
-				elementsCopy[id] = { ...elementsCopy[id], x: updatedX - offsetX, y: updatedY - offsetY };
+				elementsCopy[id!] = { ...elementsCopy[id!], x: updatedX - offsetX!, y: updatedY - offsetY! };
 				setElements(elementsCopy, true);
-			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement.type)) {
-				const { id, offsetX, offsetY } = selectedElement;
+			} else if ([ELEMENT_TYPES.GATEWAY].includes(selectedElement?.type!)) {
+				const { id, offsetX, offsetY } = selectedElement as SelectedElementType;
 				const elementsCopy = [...elements];
-				elementsCopy[id] = {
-					...elementsCopy[id],
-					point: { x: updatedX - offsetX, y: updatedY - offsetY }
+				elementsCopy[id!] = {
+					...elementsCopy[id!],
+					point: { x: updatedX - offsetX!, y: updatedY - offsetY! }
 				};
 				setElements(elementsCopy, true);
 			} else {
-				const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement;
-				const width = x2 - x1;
-				const height = y2 - y1;
-				const newX = updatedX - offsetX;
-				const newY = updatedY - offsetY;
-				const options = type === ELEMENT_TYPES.TEXT ? { text: selectedElement.text } : {};
+				const { id, x1, y1, x2, y2, type, offsetX, offsetY } = selectedElement as SelectedElementType;
+				const width = x2! - x1!;
+				const height = y2! - y1!;
+				const newX = updatedX - offsetX!;
+				const newY = updatedY - offsetY!;
+				const options = type === ELEMENT_TYPES.TEXT ? { text: selectedElement?.text } : {};
 
-				updateElement(id, newX, newY, newX + width, newY + height, type, options);
+				updateElement(id!, newX, newY, newX + width, newY + height, type!, options);
 			}
 		} else if (action === ACTIONS.RESIZING) {
-			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)) {
-				const hasPointOver = selectedElement.points.map((point, index) => {
-					return nearPoint(updatedX, updatedY, point.x, point.y, 'start');
+			if ([ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type!)) {
+				const hasPointOver = selectedElement?.points?.map((point: { x: number; y: number }) => {
+					return nearPoint(updatedX, updatedY, point?.x, point?.y, 'start');
 				});
 
-				const index = hasPointOver.indexOf('start');
+				const index = hasPointOver?.indexOf('start')!;
 				if (index > -1) {
 					const selectedElementCopy = cloneDeep(selectedElement);
 					const newPoints = selectedElementCopy.points;
 					newPoints[index] = { x: updatedX, y: updatedY };
 					const elementsCopy = cloneDeep(elements);
-					elementsCopy[selectedElement.id] = {
-						...elementsCopy[selectedElement.id],
+					elementsCopy[selectedElement?.id!] = {
+						...elementsCopy[selectedElement?.id as number],
 						points: newPoints
 					};
 					setSelectedElement(selectedElementCopy);
 					setElements(elementsCopy, true);
 				}
-			} else if (ELEMENT_TYPES.CIRCLE === selectedElement.type) {
+			} else if (ELEMENT_TYPES.CIRCLE === selectedElement?.type) {
 				const { id, x, y } = selectedElement;
 				const elementsCopy = [...elements];
 				const radius = getRadius(x, y, updatedX, updatedY);
-				elementsCopy[id] = { ...elementsCopy[id], radius: radius };
+				elementsCopy[id!] = { ...elementsCopy[id!], radius: radius };
 				setElements(elementsCopy, true);
 			} else {
-				const { id, type, position, ...coordinates } = selectedElement;
-				const { x1, y1, x2, y2 } = resizedCoordinates(updatedX, updatedY, position, coordinates);
-				updateElement(id, x1, y1, x2, y2, type);
+				const { id, type, position, ...coordinates } = selectedElement as SelectedElementType;
+				const { x1, y1, x2, y2 } = resizedCoordinates(
+					updatedX,
+					updatedY,
+					position,
+					coordinates
+				) as SelectedElementType;
+				updateElement(id!, x1!, y1!, x2!, y2!, type!);
 			}
 		}
 	};
 
-	const handleMouseUp = event => {
+	const handleMouseUp = (event: React.MouseEvent) => {
 		const { clientX, clientY } = event;
 		const { updatedX, updatedY } = updatedPoints(scale, { x: clientX, y: clientY }, viewportTopLeft, {
 			offsetLeft: canvasRef.current.offsetLeft,
@@ -484,41 +540,56 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 		if (selectedElement) {
 			if (
 				selectedElement.type === ELEMENT_TYPES.TEXT &&
-				updatedX - selectedElement.offsetX === selectedElement.x1 &&
-				updatedY - selectedElement.offsetY === selectedElement.y1
+				updatedX - selectedElement.offsetX! === selectedElement.x1 &&
+				updatedY - selectedElement?.offsetY! === selectedElement.y1
 			) {
 				setAction(ACTIONS.WRITING);
 				return;
 			}
 
 			const index = selectedElement.id;
-			const { id, type } = elements[index];
+			const { id, type } = elements[index!];
 
 			if ((action === ACTIONS.DRAWING || action === ACTIONS.RESIZING) && adjustmentRequired(type)) {
-				const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index]);
-				updateElement(id, x1, y1, x2, y2, type);
+				const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index!]) as SelectedElementType;
+				updateElement(id, x1!, y1!, x2!, y2!, type!);
 			}
 		}
 
 		if (action === ACTIONS.WRITING) return;
 		if (
 			action === ACTIONS.DRAWING &&
-			[ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement.type)
+			[ELEMENT_TYPES.POLYGON, ELEMENT_TYPES.POLYLINE].includes(selectedElement?.type!)
 		) {
 			return;
 		}
 		setAction(ACTIONS.NONE);
-		setSelectedElement(null);
+		if (tool === ELEMENT_TYPES.SELECTION) {
+			const element = getElementAtPosition(updatedX, updatedY, elements);
+			if (!element) {
+				setSelectedElement(null);
+				setEditElement(null);
+			}
+		}
 	};
 
-	const handleTextBlur = event => {
-		const { id, x1, y1, type } = selectedElement;
+	const handleTextBlur = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const { id, x1, y1, type } = selectedElement as SelectedElementType;
 
 		setAction(ACTIONS.NONE);
 		setSelectedElement(null);
-		updateElement(id, x1, y1, null, null, type, {
+		updateElement(id!, x1!, y1!, null, null, type!, {
 			text: event.target.value
 		});
+	};
+
+	const onElementSelect = (element: ElementType) => {
+		setEditElement(element);
+		setSelectedElement(null);
+	};
+
+	const onGridChange = (newGridObj: { isEnable: boolean; snapSize: number }) => {
+		setGridObj(newGridObj);
 	};
 
 	return (
@@ -527,6 +598,7 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				// leftPanel
 				tool={tool}
 				setTool={setTool}
+				onElementSelect={onElementSelect}
 				// bottomPanel - zoom tool
 				currentScale={`${Math.round(scale * 10) * 10}%`}
 				onZoomReset={() => reset(context)}
@@ -536,21 +608,24 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 				redo={redo}
 				// bottomPanel - grid tool
 				gridObj={gridObj}
-				onGridChange={setGridObj}
+				// onGridChange={setGridObj}
+				onGridChange={onGridChange}
+				// rightPanel - selected item
+				element={editElement}
 			>
 				{action === ACTIONS.WRITING && (
 					<textarea
 						ref={textAreaRef}
 						onBlur={handleTextBlur}
 						style={{
-							top: selectedElement.y1 - 3,
-							left: selectedElement.x1,
+							top: selectedElement?.y1! - 3,
+							left: selectedElement?.x1,
 							font: '24px sans-serif',
 							margin: 0,
 							border: 0,
 							outline: 0,
 							padding: 0,
-							resize: 'auto',
+							resize: 'both',
 							position: 'fixed',
 							overflow: 'hidden',
 							whiteSpace: 'pre',
@@ -571,20 +646,6 @@ const CanvasDrawing = ({ canvasWidth, canvasHeight, zone }) => {
 			</Layout>
 		</div>
 	);
-};
-
-CanvasDrawing.propTypes = {
-	canvasWidth: PropTypes.number.isRequired,
-	canvasHeight: PropTypes.number.isRequired,
-	zone: PropTypes.object
-};
-
-CanvasDrawing.defaultProps = {
-	zone: {
-		width: 300,
-		height: 200,
-		name: 'Small Factory'
-	}
 };
 
 export default CanvasDrawing;

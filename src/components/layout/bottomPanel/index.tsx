@@ -6,9 +6,13 @@ import ZoomToolbar from './components/zoomToolbar';
 interface BottomPanelProps {
 	currentScale: string;
 	onZoomReset: () => void;
-	onZoomUpdate: () => void;
+	onZoomUpdate: (
+		event: React.MouseEvent<HTMLButtonElement>,
+		zoomValue: number,
+		mouseWheel?: boolean
+	) => void;
 	gridObj: { isEnable: boolean; snapSize: number };
-	onGridChange: () => void;
+	onGridChange: (newGridObj: { isEnable: boolean; snapSize: number }) => void;
 }
 
 const BottomPanel = ({

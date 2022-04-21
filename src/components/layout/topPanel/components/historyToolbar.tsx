@@ -16,7 +16,7 @@ const HistoryToolbar = ({ undo, redo }: HistoryToolbarProps) => {
 				{Object.values(ELEMENT_EDIT_TYPES).map((element: string) => {
 					return (
 						<div key={element} title={element[0].toUpperCase() + element.slice(1)}>
-							<button onClick={element === 'undo' ? undo : redo} className="__notSelected">
+							<button onClick={element === 'undo' ? undo : redo} className="__default">
 								<EditIcons name={element} />
 							</button>
 						</div>

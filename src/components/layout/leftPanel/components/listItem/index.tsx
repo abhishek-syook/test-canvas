@@ -1,15 +1,16 @@
 import './index.scss';
 import React, { FC, useState } from 'react';
-
 import ToolIcons from 'assets/toolIcons';
+import { ElementType } from 'types';
 
 interface Props {
-	items?: { _id: string; elementType?: string }[] | null;
+	items?: ElementType[] | null;
 	icon: React.ReactNode | null;
 	label?: string;
+	onElementSelect: (element: ElementType) => void;
 }
 
-const ListItem: FC<Props> = ({ items, icon, label }) => {
+const ListItem: FC<Props> = ({ items, icon, label, onElementSelect }) => {
 	const [isExpand, setIsExpand] = useState(true);
 
 	return (
@@ -22,8 +23,8 @@ const ListItem: FC<Props> = ({ items, icon, label }) => {
 				<ul>
 					{items.map(item => {
 						return (
-							<li key={item._id} className="__itemRow">
-								<ToolIcons name={item.elementType ? item.elementType : 'gateway'} />
+							<li key={item._id} className="__itemRow" onClick={() => onElementSelect(item)}>
+								<ToolIcons name={'elementType' in item ? item.elementType : 'gateway'} />
 								{item._id}
 							</li>
 						);

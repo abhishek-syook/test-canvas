@@ -1,0 +1,14 @@
+.rightPanel {
+	width: 300px;
+	overflow: scroll;
+	height: calc(100vh - 40px);
+	padding: 8px;
+	background-color: var(--white);
+}
+
+.notSelected {
+	height: calc(100vh - 120px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
