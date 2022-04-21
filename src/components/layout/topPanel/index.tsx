@@ -8,7 +8,7 @@ interface Props {
 	undo: () => void;
 	redo: () => void;
 	tool: string;
-	setTool: (elementType: string) => string;
+	setTool: (elementType: string) => void;
 }
 
 const TopPanel: FC<Props> = ({ undo, redo, tool, setTool }) => {

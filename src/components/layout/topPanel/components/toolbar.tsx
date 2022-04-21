@@ -6,7 +6,7 @@ import ToolIcons from 'assets/toolIcons';
 
 interface Props {
 	selectedTool: string;
-	onChange: (elementType: string) => string;
+	onChange: (elementType: string) => void;
 }
 
 const Toolbar: FC<Props> = ({ selectedTool, onChange }) => {

@@ -5,7 +5,7 @@ interface GridToolbarProps {
 		isEnable: boolean;
 		snapSize: number;
 	};
-	onChange: (gridObj: {}) => void;
+	onChange: (newGridObj: { isEnable: boolean; snapSize: number }) => void;
 }
 
 const GridToolbar = ({ gridObj, onChange }: GridToolbarProps) => {
@@ -23,7 +23,7 @@ const GridToolbar = ({ gridObj, onChange }: GridToolbarProps) => {
 					id="gridDisplay"
 					name="isEnable"
 					checked={isEnable}
-					onChange={() => onChange((p: {}) => ({ ...p, isEnable: !isEnable }))}
+					onChange={() => onChange({ isEnable: !isEnable, snapSize })}
 				/>
 				<label htmlFor="gridDisplay">Show Grid</label>
 			</div>
@@ -36,7 +36,7 @@ const GridToolbar = ({ gridObj, onChange }: GridToolbarProps) => {
 					min={0}
 					step={0.5}
 					value={snapSize}
-					onChange={e => onChange((p: {}) => ({ ...p, snapSize: +e.target.value }))}
+					onChange={e => onChange({ isEnable, snapSize: +e.target.value })}
 				/>
 			</div>
 		</div>

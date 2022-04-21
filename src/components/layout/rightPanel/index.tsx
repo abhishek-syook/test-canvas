@@ -3,57 +3,10 @@ import './index.scss';
 import React from 'react';
 import MapAndTrackEdit from './components/mapAndTrackEdit';
 import GatewayEdit from './components/gatewayEdit';
-
-type allProps = {
-	_id: string;
-	type: string;
-	coordinates:
-		| { x: number; y: number }[]
-		| {
-				x: number;
-				y: number;
-				z: number;
-		  };
-	elementType?: string;
-	label?: string;
-	labelCoordinates?: {
-		x: null;
-		y: null;
-	};
-	zoneId?: string;
-	clusterId?:
-		| string
-		| {
-				labels: any;
-				_id: string;
-				name: string;
-				description: string;
-				zoneId: {
-					labels: any;
-					_id: string;
-					name: string;
-					description: string;
-				};
-		  };
-	elementProperties?: {
-		fill: string;
-		fillOpacity: number;
-		stroke: string;
-		strokeWidth: number;
-	};
-	name?: string;
-	hardwareType?: string;
-	identifierKey?: string;
-	identifierValue?: string;
-	plotCoordinates?: {
-		x: number;
-		y: number;
-		z: number;
-	};
-};
+import { ElementType } from 'types';
 
 interface RightPanelProps {
-	element: null | allProps;
+	element: null | ElementType;
 }
 
 const RightPanel = ({ element }: RightPanelProps) => {
@@ -62,27 +15,27 @@ const RightPanel = ({ element }: RightPanelProps) => {
 			<span>Editor</span>
 			{!element || element.type === 'image' ? (
 				<div className="notSelected">{element ? 'Cannot Edit Image' : 'No Item Selected'}</div>
-			) : element.elementType ? (
+			) : 'elementType' in element ? (
 				<MapAndTrackEdit
 					type={element.type}
-					elementType={(element.elementType = element.elementType!)}
-					zone={(element.zoneId = element.zoneId!)}
+					elementType={element.elementType}
+					zone={element.zoneId}
 					cluster={element.clusterId}
-					label={(element.label = element.label!)}
-					labelCoordinates={(element.labelCoordinates = element.labelCoordinates!)}
+					label={element.label}
+					labelCoordinates={element.labelCoordinates}
 					coordinates={element.coordinates}
-					elementProperties={(element.elementProperties = element.elementProperties!)}
+					elementProperties={element.elementProperties}
 				/>
 			) : (
 				<GatewayEdit
-					name={(element.name = element.name!)}
-					hardwareType={(element.hardwareType = element.hardwareType!)}
-					identifierKey={(element.identifierKey = element.identifierKey!)}
-					identifierValue={(element.identifierValue = element.identifierValue!)}
+					name={element.name}
+					hardwareType={element.hardwareType}
+					identifierKey={element.identifierKey}
+					identifierValue={element.identifierValue}
 					coordinates={element.coordinates}
-					plotCoordinates={(element.plotCoordinates = element.plotCoordinates!)}
+					plotCoordinates={element.plotCoordinates}
 					cluster={element.clusterId}
-					type={(element.type = element.type!)}
+					type={element.type}
 				/>
 			)}
 		</div>

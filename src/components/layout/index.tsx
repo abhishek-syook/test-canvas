@@ -6,19 +6,24 @@ import LeftPanel from './leftPanel';
 import TopPanel from './topPanel';
 import RightPanel from './rightPanel';
 import BottomPanel from './bottomPanel';
+import { ElementType } from 'types';
 
 interface LayoutProps {
-	children: Node;
+	children: React.ReactNode;
 
 	// leftPanel
 	tool: string;
-	setTool: (elementType: string) => string;
-	onElementSelect: () => void;
+	setTool: (elementType: string) => void;
+	onElementSelect: (element: ElementType) => void;
 
 	// bottomPanel - zoom tool
 	currentScale: string;
 	onZoomReset: () => void;
-	onZoomUpdate: () => void;
+	onZoomUpdate: (
+		event: React.MouseEvent<HTMLButtonElement>,
+		zoomValue: number,
+		mouseWheel?: boolean
+	) => void;
 	// bottomPanel - history tools
 
 	undo: () => void;
@@ -26,56 +31,10 @@ interface LayoutProps {
 	// bottomPanel - grid tool
 
 	gridObj: { isEnable: boolean; snapSize: number };
-	onGridChange: () => void;
+	onGridChange: (newGridObj: { isEnable: boolean; snapSize: number }) => void;
 
 	// rightPanel - selected element
-	element: null | {
-		_id: string;
-		type: string;
-		coordinates:
-			| { x: number; y: number }[]
-			| {
-					x: number;
-					y: number;
-					z: number;
-			  };
-		elementType?: string;
-		label?: string;
-		labelCoordinates?: {
-			x: null;
-			y: null;
-		};
-		zoneId?: string;
-		clusterId?:
-			| string
-			| {
-					labels: any;
-					_id: string;
-					name: string;
-					description: string;
-					zoneId: {
-						labels: any;
-						_id: string;
-						name: string;
-						description: string;
-					};
-			  };
-		elementProperties?: {
-			fill: string;
-			fillOpacity: number;
-			stroke: string;
-			strokeWidth: number;
-		};
-		name?: string;
-		hardwareType?: string;
-		identifierKey?: string;
-		identifierValue?: string;
-		plotCoordinates?: {
-			x: number;
-			y: number;
-			z: number;
-		};
-	};
+	element: null | ElementType;
 }
 
 const Layout = ({

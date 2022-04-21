@@ -3,9 +3,10 @@ import { gateways, mapElements, trackElements } from 'constants/syookData';
 import React from 'react';
 import ListItem from './components/listItem';
 import FacilityIcon from 'assets/facilityIcon';
+import { ElementType } from 'types';
 
 interface LeftPanelProps {
-	onElementSelect: () => void;
+	onElementSelect: (element: ElementType) => void;
 }
 
 const LeftPanel = ({ onElementSelect }: LeftPanelProps) => {
