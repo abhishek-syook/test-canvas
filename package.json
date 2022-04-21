@@ -2,10 +2,10 @@
 	"name": "map-builder-canvas",
 	"version": "0.1.0",
 	"private": true,
-	"main": "build/index.js",
-	"module": "build/index.esm.js",
+	"main": "lib/index.js",
+	"module": "lib/index.esm.js",
 	"files": [
-		"build"
+		"lib"
 	],
 	"lint-staged": {
 		"*.{js,jsx,json,css}": [

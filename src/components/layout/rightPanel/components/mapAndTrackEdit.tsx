@@ -25,7 +25,7 @@ const MapAndTrackEdit = ({
 	type,
 	elementType,
 	zone,
-	cluster,
+	// cluster,
 	label,
 	labelCoordinates,
 	coordinates,
@@ -37,7 +37,8 @@ const MapAndTrackEdit = ({
 				<h3>General</h3>
 				<p>Type: {type}</p>
 				<p>Shape: {elementType}</p>
-				{type === 'track' && <p>Cluster: {cluster}</p>}
+				{/* TODO: update after build check */}
+				{/* {type === 'track' ? <span>Cluster: {cluster}</span> : null} */}
 				<p>Zone: {zone}</p>
 			</div>
 			<div>
