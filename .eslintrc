@@ -32,7 +32,8 @@
 		"no-tabs": ["error", { "allowIndentationTabs": true }],
 		"linebreak-style": ["error", "unix"],
 		"quotes": ["error", "single"],
-		"semi": ["error", "always"]
+		"semi": ["error", "always"],
+		"multiline-ternary": "off"
 	},
 	"settings": {
 		"react": {
