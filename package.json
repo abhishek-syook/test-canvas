@@ -23,7 +23,7 @@
 		"prepublishOnly": "npm run build",
 		"prettify": "prettier . -c --config .prettierrc",
 		"prettify:fix": "prettier . -c --config .prettierrc --write",
-		"build:rollup": "rollup -c",
+		"build:rollup": "rm -rf lib && rollup -c",
 		"build:umd": "rm -rf lib && NODE_ENV=production webpack --config webpack.prod.js",
 		"build:umd:withAnalyzer": "NODE_ENV=production ANALYZER=true webpack --config webpack.prod.js"
 	},
